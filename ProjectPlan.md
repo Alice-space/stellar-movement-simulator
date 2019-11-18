@@ -1,7 +1,7 @@
 <!--
 * @Author: Alicespace
 * @Date: 2019-11-18 08:28:36
- * @LastEditTime: 2019-11-18 13:37:57
+ * @LastEditTime: 2019-11-18 13:45:51
 -->
 
 # 星体运动模拟器开发笔记
@@ -11,6 +11,7 @@
 使用```Panda3D```引擎，构建三维行星运动的模型，并提供可视化的形象。
 
 ## ２.人员分工
+
 - 李志昊：draw3DWorld，controller，RenderPipeline
 - 邢景琪、龙俊：calculate、drawGUI
 - 刘承恩：测试，演示样例，3D模型、res
