@@ -1,7 +1,7 @@
 <!--
 * @Author: Alicespace
 * @Date: 2019-11-18 08:28:36
- * @LastEditTime: 2019-11-19 12:01:56
+ * @LastEditTime: 2019-11-19 12:03:55
 -->
 
 # 星体运动模拟器开发笔记
@@ -12,9 +12,9 @@
 
 ## 2.人员分工
 
-- 李志昊：draw3DWorld，controller，RenderPipeline、DBmanager
+- 李志昊：draw3DWorld，controller，RenderPipeline
 - 邢景琪、龙俊：calculate、drawGUI
-- 刘承恩：测试，演示样例，3D模型、res
+- 刘承恩：测试，演示样例，3D模型、res、DBmanager
 
 ## 3.开发需求
 
