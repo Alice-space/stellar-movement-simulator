@@ -1,8 +1,9 @@
 '''
 @Author: Alicespace
 @Date: 2019-11-18 08:06:30
-@LastEditTime: 2019-11-19 22:01:38
+@LastEditTime: 2019-11-20 14:16:06
 '''
+
 import sys
 from math import pi, sin, cos
 
@@ -10,6 +11,50 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, loadPrcFileData
 from direct.actor.Actor import Actor
 from direct.task import Task
+
+
+class cameraSpeed():
+    '''
+    @description:
+    a class for velocity change and effect
+    @param {type}
+    null
+    @return:
+    null
+    '''
+    defaultMoveSpeed = 10
+    minVelocity = 0.001
+    velocityDecayRate = 0.5
+    Vx = 0
+    Vy = 0
+    Vz = 0
+
+    def addVx(self, dt):
+        cameraSpeed.Vx += self.defaultMoveSpeed * dt
+
+    def addVy(self, dt):
+        cameraSpeed.Vy += self.defaultMoveSpeed * dt
+
+    def addVz(self, dt):
+        cameraSpeed.Vz += self.defaultMoveSpeed * dt
+
+    def slideX(self):
+        if (abs(cameraSpeed.Vx) <= self.minVelocity):
+            cameraSpeed.Vx = 0
+        if (cameraSpeed.Vx != 0):
+            cameraSpeed.Vx *= self.velocityDecayRate
+
+    def slideY(self):
+        if (abs(cameraSpeed.Vy) <= self.minVelocity):
+            cameraSpeed.Vy = 0
+        if (cameraSpeed.Vy != 0):
+            cameraSpeed.Vy *= self.velocityDecayRate
+
+    def slideZ(self):
+        if (abs(cameraSpeed.Vz) <= self.minVelocity):
+            cameraSpeed.Vz = 0
+        if (cameraSpeed.Vz != 0):
+            cameraSpeed.Vz *= self.velocityDecayRate
 
 
 class stellarMovementSimulator(ShowBase):
@@ -28,11 +73,22 @@ class stellarMovementSimulator(ShowBase):
         # some properties about window and mouse
         self.disableMouse()
 
+        # Load the environment model.
+        self.scene = self.loader.loadModel("models/environment")
+        # Reparent the model to render.
+        self.scene.reparentTo(self.render)
+        # Apply scale and position transforms on the model.
+        self.scene.setScale(0.25, 0.25, 0.25)
+        self.scene.setPos(-8, 42, 0)
+
         # an earth model
         self.pandaActor = self.loader.loadModel("res/tmp/earth/earth")
         self.pandaActor.reparentTo(self.render)
         self.pandaActor.setPos(0, 0, 0)
+
+        # add camera move task
         self.taskMgr.add(self.moveCamera, "moveCamera")
+
         # store keyMap
         self.keyMap = {
             "left": 0,
@@ -42,6 +98,10 @@ class stellarMovementSimulator(ShowBase):
             "up": 0,
             "down": 0
         }
+
+        # instance a speed object
+        self.cameraSpeed = cameraSpeed()
+
         # add key events
         self.accept("q", sys.exit)
         self.accept("a", self.setKey, ["left", True])
@@ -64,19 +124,52 @@ class stellarMovementSimulator(ShowBase):
     # Define a procedure to move the camera.
     def moveCamera(self, task):
         dt = globalClock.getDt()
+
         # deal with movement events
+        isXMoved = False
+        isYMoved = False
+        isZMoved = False
+
+        # judge movement
         if self.keyMap["left"]:
-            self.camera.setX(self.camera.getX() - 10 * dt)
+            if self.cameraSpeed.Vx > 0:
+                self.cameraSpeed.slideX()
+            self.cameraSpeed.addVx(-dt)
+            isXMoved = True
         if self.keyMap["right"]:
-            self.camera.setX(self.camera.getX() + 10 * dt)
+            if self.cameraSpeed.Vx < 0:
+                self.cameraSpeed.slideX()
+            self.cameraSpeed.addVx(dt)
+            isXMoved = True
         if self.keyMap["forward"]:
-            self.camera.setY(self.camera.getY() + 10 * dt)
+            if self.cameraSpeed.Vy < 0:
+                self.cameraSpeed.slideY()
+            self.cameraSpeed.addVy(dt)
+            isYMoved = True
         if self.keyMap["backward"]:
-            self.camera.setY(self.camera.getY() - 10 * dt)
+            if self.cameraSpeed.Vy > 0:
+                self.cameraSpeed.slideY()
+            self.cameraSpeed.addVy(-dt)
+            isYMoved = True
         if self.keyMap["up"]:
-            self.camera.setZ(self.camera.getZ() + 10 * dt)
+            if self.cameraSpeed.Vz < 0:
+                self.cameraSpeed.slideZ()
+            self.cameraSpeed.addVz(dt)
+            isZMoved = True
         if self.keyMap["down"]:
-            self.camera.setZ(self.camera.getZ() - 10 * dt)
+            if self.cameraSpeed.Vz > 0:
+                self.cameraSpeed.slideZ()
+            self.cameraSpeed.addVz(-dt)
+            isZMoved = True
+        if not isXMoved:
+            self.cameraSpeed.slideX()
+        if not isYMoved:
+            self.cameraSpeed.slideY()
+        if not isZMoved:
+            self.cameraSpeed.slideZ()
+        self.camera.setPos(self.camera.getX() + self.cameraSpeed.Vx,
+                           self.camera.getY() + self.cameraSpeed.Vy,
+                           self.camera.getZ() + self.cameraSpeed.Vz)
         return task.cont
 
 
