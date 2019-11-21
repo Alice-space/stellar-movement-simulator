@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-11-18 08:06:30
-@LastEditTime: 2019-11-20 14:16:06
+@LastEditTime: 2019-11-21 12:38:52
 '''
 
 import sys
@@ -11,6 +11,7 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, loadPrcFileData
 from direct.actor.Actor import Actor
 from direct.task import Task
+from pandac.PandaModules import Texture, TextureStage, DirectionalLight, AmbientLight, TexGenAttrib, VBase4
 
 
 class cameraSpeed():
@@ -116,6 +117,28 @@ class stellarMovementSimulator(ShowBase):
         self.accept("s-up", self.setKey, ["backward", False])
         self.accept("space-up", self.setKey, ["up", False])
         self.accept("lshift-up", self.setKey, ["down", False])
+
+        # load sky sphere
+        self.skysphere = self.loader.loadModel("res/skyBg/InvertedSphere.egg")
+        self.skysphere.setTexGen(TextureStage.getDefault(),
+                                 TexGenAttrib.MWorldPosition)
+        self.skysphere.setTexProjector(TextureStage.getDefault(), self.render,
+                                       self.skysphere)
+        self.skysphere.setTexPos(TextureStage.getDefault(), 0, 0, 0)
+        self.skysphere.setTexScale(TextureStage.getDefault(), .5)
+        tex = self.loader.loadCubeMap("res/skyBg/BlueGreenNebula__#.png")
+        self.skysphere.setTexture(tex)
+        self.skysphere.setLightOff()
+        self.skysphere.setScale(1000)
+        self.skysphere.reparentTo(self.render)
+        self.skysphere.setBin('background', 1)
+        self.skysphere.setDepthWrite(0)
+        self.skysphere.reparentTo(self.render)
+        self.taskMgr.add(self.skysphereTask, "SkySphere Task")
+
+    def skysphereTask(self, task):
+        self.skysphere.setPos(self.camera, 0, 0, 0)
+        return task.cont
 
     # Records the state of the arrow keys
     def setKey(self, key, value):
