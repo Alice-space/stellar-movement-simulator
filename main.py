@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-11-18 08:06:30
-@LastEditTime: 2019-11-21 12:38:52
+@LastEditTime: 2019-11-25 17:06:14
 '''
 
 import sys
@@ -11,7 +11,7 @@ from direct.showbase.ShowBase import ShowBase
 from panda3d.core import loadPrcFile, loadPrcFileData
 from direct.actor.Actor import Actor
 from direct.task import Task
-from pandac.PandaModules import Texture, TextureStage, DirectionalLight, AmbientLight, TexGenAttrib, VBase4
+from pandac.PandaModules import WindowProperties, Texture, TextureStage, DirectionalLight, AmbientLight, TexGenAttrib, VBase4
 
 
 class cameraSpeed():
@@ -68,19 +68,18 @@ class stellarMovementSimulator(ShowBase):
         null
     '''
     def __init__(self):
-        # loadPrcFileData('', 'fullscreen true')
-        loadPrcFile("res/config/Config.prc")
+        loadPrcFileData('', 'fullscreen false')
         ShowBase.__init__(self)
+        self.base = self
+        self.setup()
+
+    def setup(self):
         # some properties about window and mouse
         self.disableMouse()
-
-        # Load the environment model.
-        self.scene = self.loader.loadModel("models/environment")
-        # Reparent the model to render.
-        self.scene.reparentTo(self.render)
-        # Apply scale and position transforms on the model.
-        self.scene.setScale(0.25, 0.25, 0.25)
-        self.scene.setPos(-8, 42, 0)
+        props = WindowProperties()
+        props.setCursorHidden(True)
+        props.setMouseMode(WindowProperties.M_relative)
+        self.base.win.requestProperties(props)
 
         # an earth model
         self.pandaActor = self.loader.loadModel("res/tmp/earth/earth")
@@ -89,7 +88,8 @@ class stellarMovementSimulator(ShowBase):
 
         # add camera move task
         self.taskMgr.add(self.moveCamera, "moveCamera")
-
+        self.taskMgr.add(self.skysphereTask, "SkySphere Task")
+        self.taskMgr.add(self.spinCamera, "spinCamera")
         # store keyMap
         self.keyMap = {
             "left": 0,
@@ -134,7 +134,19 @@ class stellarMovementSimulator(ShowBase):
         self.skysphere.setBin('background', 1)
         self.skysphere.setDepthWrite(0)
         self.skysphere.reparentTo(self.render)
-        self.taskMgr.add(self.skysphereTask, "SkySphere Task")
+
+        global prevMouseX
+        global prevMouseY
+        global prevMouseVal
+        global prevDxs
+        global prevDys
+        global totalSmoothStore
+        prevMouseVal = 0
+        prevMouseX = 0
+        prevMouseY = 0
+        prevDxs = []
+        prevDys = []
+        totalSmoothStore = 10
 
     def skysphereTask(self, task):
         self.skysphere.setPos(self.camera, 0, 0, 0)
@@ -174,6 +186,7 @@ class stellarMovementSimulator(ShowBase):
                 self.cameraSpeed.slideY()
             self.cameraSpeed.addVy(-dt)
             isYMoved = True
+        '''
         if self.keyMap["up"]:
             if self.cameraSpeed.Vz < 0:
                 self.cameraSpeed.slideZ()
@@ -184,15 +197,62 @@ class stellarMovementSimulator(ShowBase):
                 self.cameraSpeed.slideZ()
             self.cameraSpeed.addVz(-dt)
             isZMoved = True
+        '''
         if not isXMoved:
             self.cameraSpeed.slideX()
         if not isYMoved:
             self.cameraSpeed.slideY()
+        '''
         if not isZMoved:
             self.cameraSpeed.slideZ()
-        self.camera.setPos(self.camera.getX() + self.cameraSpeed.Vx,
-                           self.camera.getY() + self.cameraSpeed.Vy,
-                           self.camera.getZ() + self.cameraSpeed.Vz)
+        '''
+        self.camera.setX(self.camera, self.cameraSpeed.Vx * 0.5)
+        self.camera.setY(self.camera, self.cameraSpeed.Vy)
+        return task.cont
+
+    def spinCamera(self, task):
+        global prevMouseX
+        global prevMouseY
+        global prevMouseVal
+        global prevDxs
+        global prevDys
+        global totalSmoothStore
+        centerX = self.win.getXSize() / 2
+        centerY = self.win.getYSize() / 2
+        md = self.win.getPointer(0)
+        x = md.getX()
+        y = md.getY()
+        if prevMouseVal == 0:
+            prevMouseVal = 1
+            prevDxs = []
+            prevDys = []
+        else:
+            dx = x - prevMouseX
+            dy = y - prevMouseY
+            if len(prevDxs) > totalSmoothStore:
+                prevDxs.pop(0)
+            if len(prevDys) > totalSmoothStore:
+                prevDys.pop(0)
+
+            prevDxs.append(dx)
+            prevDys.append(dy)
+
+            curAverageDx = 0.
+            for curDx in prevDxs:
+                curAverageDx += curDx
+            curAverageDx = curAverageDx / len(prevDxs)
+
+            curAverageDy = 0.
+            for curDy in prevDys:
+                curAverageDy += curDy
+            curAverageDy = curAverageDy / len(prevDys)
+            self.camera.setP(self.camera.getP() -
+                             5 * globalClock.getDt() * curAverageDy)
+            self.camera.setH(self.camera.getH() -
+                             5 * globalClock.getDt() * curAverageDx)
+
+        prevMouseX = x
+        prevMouseY = y
         return task.cont
 
 
