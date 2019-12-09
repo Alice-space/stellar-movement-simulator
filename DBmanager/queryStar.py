@@ -1,2 +1,0 @@
-class star(object):
-    pass

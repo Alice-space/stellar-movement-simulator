@@ -1,27 +1,33 @@
 '''
 @Author: Alicespace
 @Date: 2019-11-18 08:06:30
-@LastEditTime: 2019-11-25 17:06:14
+@LastEditTime: 2019-12-09 16:51:27
 '''
 
 import sys
 from math import pi, sin, cos
-
+from starDB import starDBManger
+from calculate import finalcalculation
+from calculate import Mem
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import loadPrcFile, loadPrcFileData
+from direct.interval.IntervalGlobal import Sequence
+from panda3d.core import loadPrcFile, loadPrcFileData, WindowProperties, Texture, TextureStage, DirectionalLight, AmbientLight, TexGenAttrib
 from direct.actor.Actor import Actor
 from direct.task import Task
-from pandac.PandaModules import WindowProperties, Texture, TextureStage, DirectionalLight, AmbientLight, TexGenAttrib, VBase4
+# from pandac.PandaModules import WindowProperties, Texture, TextureStage, DirectionalLight, AmbientLight, TexGenAttrib
+table_name = 'Star_info'
+
+Actors = []
 
 
 class cameraSpeed():
     '''
     @description:
-    a class for velocity change and effect
+        a class for velocity change and effect
     @param {type}
-    null
+        null
     @return:
-    null
+        null
     '''
     defaultMoveSpeed = 10
     minVelocity = 0.001
@@ -80,11 +86,9 @@ class stellarMovementSimulator(ShowBase):
         props.setCursorHidden(True)
         props.setMouseMode(WindowProperties.M_relative)
         self.base.win.requestProperties(props)
-
-        # an earth model
-        self.pandaActor = self.loader.loadModel("res/tmp/earth/earth")
-        self.pandaActor.reparentTo(self.render)
-        self.pandaActor.setPos(0, 0, 0)
+        # db
+        self.db = starDBManger.DBTool(table_name)
+        self.loadmodels()
 
         # add camera move task
         self.taskMgr.add(self.moveCamera, "moveCamera")
@@ -104,7 +108,7 @@ class stellarMovementSimulator(ShowBase):
         self.cameraSpeed = cameraSpeed()
 
         # add key events
-        self.accept("q", sys.exit)
+        self.accept("q", self.quitMain)
         self.accept("a", self.setKey, ["left", True])
         self.accept("d", self.setKey, ["right", True])
         self.accept("w", self.setKey, ["forward", True])
@@ -147,6 +151,12 @@ class stellarMovementSimulator(ShowBase):
         prevDxs = []
         prevDys = []
         totalSmoothStore = 10
+
+        self.mainSequence = Sequence()
+
+    def quitMain(self):
+        self.db.close()
+        sys.exit()
 
     def skysphereTask(self, task):
         self.skysphere.setPos(self.camera, 0, 0, 0)
@@ -254,6 +264,27 @@ class stellarMovementSimulator(ShowBase):
         prevMouseX = x
         prevMouseY = y
         return task.cont
+
+    # Python code to convert string to list
+    def str2list(self, string):
+        li = list(map(int, list(string.split(","))))
+        return li
+
+    def loadmodels(self):
+        # an earth model
+        global Actors
+        sql = 'select * from ' + table_name
+        s = self.db.executeQuery(sql, '')
+        st = []
+        for st in s:
+            Mem.createobject(mass=self.str2list(st[2]),
+                             cor=self.str2list(st[6]),
+                             vel=self.str2list(st[7]))
+            tmp = self.loader.loadModel("res/tmp/earth/earth")
+            tmp.reparentTo(self.render)
+            pos = self.str2list(st[6])
+            tmp.setPos(pos[0], pos[1], pos[2])
+            # Actors.append(tmp)
 
 
 app = stellarMovementSimulator()
