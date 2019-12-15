@@ -4,3 +4,4 @@
 */tmp
 *.pptx
 __pycache__
+test*.py

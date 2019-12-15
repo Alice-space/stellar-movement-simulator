@@ -1,7 +1,7 @@
 <!--
 * @Author: Alicespace
 * @Date: 2019-11-18 08:28:36
- * @LastEditTime: 2019-11-19 12:03:55
+ * @LastEditTime: 2019-12-12 10:52:54
 -->
 
 # 星体运动模拟器开发笔记
@@ -109,6 +109,6 @@
 		str star.model
 		list star.position
 		list star.velocity
-		list star.route_0
-		list star.route_1
+		#list star.route_0
+		#list star.route_1
 	```

@@ -1,23 +1,32 @@
 '''
 @Author: Alicespace
 @Date: 2019-11-18 08:06:30
-@LastEditTime: 2019-12-09 16:51:27
+@LastEditTime: 2019-12-15 18:12:48
 '''
 
 import sys
-from math import pi, sin, cos
 from starDB import starDBManger
-from calculate import finalcalculation
+from calculate import calculateloop
 from calculate import Mem
 from direct.showbase.ShowBase import ShowBase
-from direct.interval.IntervalGlobal import Sequence
-from panda3d.core import loadPrcFile, loadPrcFileData, WindowProperties, Texture, TextureStage, DirectionalLight, AmbientLight, TexGenAttrib
+from direct.interval.IntervalGlobal import Sequence, Parallel
+from direct.interval.LerpInterval import LerpPosInterval
+from panda3d.core import PointLight, loadPrcFile, Point3, loadPrcFileData, WindowProperties, Texture, TextureStage, DirectionalLight, AmbientLight, VBase4, TexGenAttrib
 from direct.actor.Actor import Actor
 from direct.task import Task
 # from pandac.PandaModules import WindowProperties, Texture, TextureStage, DirectionalLight, AmbientLight, TexGenAttrib
 table_name = 'Star_info'
+time_rate = 10
+Actors = {}
+Sequences = {}
+ObjOrder = 0
+ActorsOn = [False for i in range(105)]
 
-Actors = []
+
+def str2list(string):
+    # Python code to convert string to list
+    li = list(map(int, list(string.split(","))))
+    return li
 
 
 class cameraSpeed():
@@ -77,7 +86,13 @@ class stellarMovementSimulator(ShowBase):
         loadPrcFileData('', 'fullscreen false')
         ShowBase.__init__(self)
         self.base = self
+        self.test()
         self.setup()
+        self.regKey()
+        self.setConst()
+        self.setTasks()
+        self.setSky()
+        self.loadmodelsinit()
 
     def setup(self):
         # some properties about window and mouse
@@ -86,14 +101,21 @@ class stellarMovementSimulator(ShowBase):
         props.setCursorHidden(True)
         props.setMouseMode(WindowProperties.M_relative)
         self.base.win.requestProperties(props)
-        # db
+        '''        # db
         self.db = starDBManger.DBTool(table_name)
-        self.loadmodels()
+        '''
+        # instance a speed object
+        self.cameraSpeed = cameraSpeed()
 
+    def setTasks(self):
         # add camera move task
         self.taskMgr.add(self.moveCamera, "moveCamera")
         self.taskMgr.add(self.skysphereTask, "SkySphere Task")
         self.taskMgr.add(self.spinCamera, "spinCamera")
+        self.taskMgr.add(self.detectOrd, "freshMove")
+        self.taskMgr.doMethodLater(2, self.calculateStar, 'calculateStar')
+
+    def regKey(self):
         # store keyMap
         self.keyMap = {
             "left": 0,
@@ -103,10 +125,6 @@ class stellarMovementSimulator(ShowBase):
             "up": 0,
             "down": 0
         }
-
-        # instance a speed object
-        self.cameraSpeed = cameraSpeed()
-
         # add key events
         self.accept("q", self.quitMain)
         self.accept("a", self.setKey, ["left", True])
@@ -122,6 +140,21 @@ class stellarMovementSimulator(ShowBase):
         self.accept("space-up", self.setKey, ["up", False])
         self.accept("lshift-up", self.setKey, ["down", False])
 
+    def setConst(self):
+        global prevMouseX
+        global prevMouseY
+        global prevMouseVal
+        global prevDxs
+        global prevDys
+        global totalSmoothStore
+        prevMouseVal = 0
+        prevMouseX = 0
+        prevMouseY = 0
+        prevDxs = []
+        prevDys = []
+        totalSmoothStore = 10
+
+    def setSky(self):
         # load sky sphere
         self.skysphere = self.loader.loadModel("res/skyBg/InvertedSphere.egg")
         self.skysphere.setTexGen(TextureStage.getDefault(),
@@ -139,23 +172,8 @@ class stellarMovementSimulator(ShowBase):
         self.skysphere.setDepthWrite(0)
         self.skysphere.reparentTo(self.render)
 
-        global prevMouseX
-        global prevMouseY
-        global prevMouseVal
-        global prevDxs
-        global prevDys
-        global totalSmoothStore
-        prevMouseVal = 0
-        prevMouseX = 0
-        prevMouseY = 0
-        prevDxs = []
-        prevDys = []
-        totalSmoothStore = 10
-
-        self.mainSequence = Sequence()
-
     def quitMain(self):
-        self.db.close()
+        # self.db.close()
         sys.exit()
 
     def skysphereTask(self, task):
@@ -265,26 +283,118 @@ class stellarMovementSimulator(ShowBase):
         prevMouseY = y
         return task.cont
 
-    # Python code to convert string to list
-    def str2list(self, string):
-        li = list(map(int, list(string.split(","))))
-        return li
+    def detectOrd(self, task):
+        global objs
+        global ObjOrder
+        if Mem.triggerstate is False:
+            for obj in objs:
+                if ObjOrder != obj.order:
+                    self.refreshActors()
+                    ObjOrder = obj.order
+                    return task.cont
+                elif ObjOrder == obj.order:
+                    self.refreshSequence(obj)
+            return task.cont
+        else:
+            Mem.triggerstate = False
+            objs = Mem.getcurrentobjects()
+            return task.cont
 
-    def loadmodels(self):
-        # an earth model
+    def refreshActors(self):
         global Actors
-        sql = 'select * from ' + table_name
-        s = self.db.executeQuery(sql, '')
-        st = []
-        for st in s:
-            Mem.createobject(mass=self.str2list(st[2]),
-                             cor=self.str2list(st[6]),
-                             vel=self.str2list(st[7]))
-            tmp = self.loader.loadModel("res/tmp/earth/earth")
-            tmp.reparentTo(self.render)
-            pos = self.str2list(st[6])
-            tmp.setPos(pos[0], pos[1], pos[2])
-            # Actors.append(tmp)
+        global ActorsOn
+        global Sequences
+        for obj in Actors:
+            Actors[obj].removeNode()
+        Actors = {}
+        ActorsOn = [False for i in range(105)]
+        Sequences = {}
+        self.loadmodelsinit()
+
+    def refreshSequence(self, obj):
+        global Sequences
+        if Sequences[obj.ID][0].isStopped() and ActorsOn[obj.ID] is True:
+            Sequences[obj.ID] = Sequence()
+            data = obj.dataOUT()
+            Sequences[obj.ID].append(
+                Parallel(
+                    Actors[obj.ID].hprInterval(
+                        data[0] * time_rate,
+                        Point3(data[0] * time_rate, 0, 0),
+                    ), Actors[obj.ID].posInterval(
+                        data[0] * time_rate, Point3(data[4], data[5],
+                                                    data[6]))))
+            Sequences[obj.ID].start()
+
+    def calculateStar(self, task):
+        calculateloop.loopjudge(length=1200)
+        # task.delayTime += 1
+        return task.again
+
+    def test(self):
+        Mem.createobject(objtype="Eplanet",
+                         texture="res/tmp/earth/earth.egg",
+                         mass=10,
+                         radius=30,
+                         cor=[-5000, 0, 0],
+                         vel=[0, -6000, 0])
+        Mem.createobject(objtype="Eplanet",
+                         texture="res/tmp/earth/earth.egg",
+                         mass=10,
+                         radius=10,
+                         cor=[10000, 0, 0],
+                         vel=[0, 7000, 0])
+        Mem.createobject(objtype="star",
+                         texture="res/tmp/earth/earth.egg",
+                         mass=200,
+                         radius=30,
+                         cor=[-3000, 0, 0],
+                         vel=[0, 11000, 0])
+        Mem.createobject(objtype="star",
+                         texture="res/tmp/earth/earth.egg",
+                         mass=200,
+                         radius=20,
+                         cor=[1500, 0, 0],
+                         vel=[0, -11000, 0])
+        Mem.createobject(objtype="star",
+                         texture="res/tmp/earth/earth.egg",
+                         mass=300,
+                         radius=30,
+                         cor=[21, 34, 0],
+                         vel=[0, -10, 0])
+
+        calculateloop.loopjudge(length=120)
+        global objs
+        objs = Mem.getcurrentobjects()
+
+    def loadmodelsinit(self):
+        calculateloop.loopjudge(length=1200)
+        global objs
+        global Actors
+        global ActorsOn
+        objs = Mem.getcurrentobjects()
+        for obj in objs:
+            data = obj.dataOUT()
+            ActorsOn[obj.ID] = True
+            Actors[obj.ID] = self.loader.loadModel(obj.texture)
+            # Reparent the model to render.
+            Actors[obj.ID].reparentTo(self.render)
+            # Apply scale and position transforms on the model.
+            Actors[obj.ID].setPos(data[4], data[5], data[6])
+            Actors[obj.ID].setScale(obj.radius)
+        global Sequences
+        for obj in objs:
+            Sequences[obj.ID] = Sequence()
+            data = obj.dataOUT()
+            Sequences[obj.ID].append(
+                Parallel(
+                    Actors[obj.ID].hprInterval(
+                        data[0] * time_rate,
+                        Point3(data[0] * time_rate, 0, 0),
+                    ), Actors[obj.ID].posInterval(
+                        data[0] * time_rate, Point3(data[4], data[5],
+                                                    data[6]))))
+            Sequences[obj.ID].start()
 
 
 app = stellarMovementSimulator()
