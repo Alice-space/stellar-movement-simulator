@@ -10,7 +10,7 @@ deleteobject()
 
 objects, lennum, objnum, t0, totalorder, safetynum = [], 0, 0 - 1, 0, 0, 60
 
-triggerstate = False
+triggerstate, resetworld = False, False
 
 
 class StellarObject:
@@ -135,7 +135,7 @@ def deleteobject(obj):
 def getobjectsdata():
     objectsdata = []
     for obj in objects:
-        if obj.writestate is True:
+        if obj.writestate == True:
             mydata = obj.objdata.pop()
             mylist = [obj.mass] + mydata[1:7] + [mydata[0]]
             objectsdata.append(mylist)
@@ -147,7 +147,7 @@ def getobjectsdata():
 def getobjects():
     templs = []
     for obj in objects:
-        if obj.writestate is True:
+        if obj.writestate == True:
             templs.append(obj)
         else:
             pass
@@ -157,16 +157,17 @@ def getobjects():
 def getcurrentobjects():
     templs = []
     for obj in objects:
-        if obj.readstate is True:
+        if obj.readstate == True:
             templs.append(obj)
         else:
             pass
     return templs
 
 
-def appendcriticaltime(time):
-    global criticalpoint
-    criticalpoint.append(time)
+def reinitialize():
+    global resetworld, objects, lennum, objnum, t0, totalorder
+    resetworld = True
+    objects, lennum, objnum, t0, totalorder = [], 0, 0 - 1, 0, 0
     return None
 
 

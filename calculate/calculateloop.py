@@ -5,8 +5,6 @@ from calculate import Mem
 
 G, C = 10000, 300000000
 
-Default_Texture = 'res/tmp/earth/earth.egg'
-
 objects, objectlist, tdata, ydata, y0, sol, n = [], [], [], [], [], None, 0
 
 t0, delta_t, tlist = 0, 10, []
@@ -22,7 +20,7 @@ def initialize():
     for k in range(n):
         y0.extend(objectlist[k][1:7])
     t0 = objectlist[0][7]
-    tdata, ydata, sol = [], [], None
+    tdata, ydata = [], []
     return None
 
 
@@ -140,7 +138,7 @@ def stepjudge():
                 else:
                     pass
                 Mem.createobject(objtype=temptype,
-                                 texture=Default_Texture,
+                                 texture=selectTexture(temptype),
                                  myname="Default",
                                  mass=m,
                                  radius=r,
@@ -173,12 +171,16 @@ def loopjudge(length=120):
     solve()
     while Mem.returnnum() <= length:
         verdict = stepjudge()
-        if verdict is True:
+        if verdict == True:
             pass
-        elif verdict is False:
+        elif verdict == False:
             initialize()
             solve()
         elif verdict == "need data":
             initialize()
             solve()
     return None
+
+
+def selectTexture(starType):
+    return 'res/tmp/earth/earth.egg'
