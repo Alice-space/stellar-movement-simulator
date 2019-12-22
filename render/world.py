@@ -4,7 +4,7 @@
 
 @Author: Alicespace  
 @Date: 2019-11-18 08:06:30  
-@LastEditTime : 2019-12-22 17:22:46
+@LastEditTime : 2019-12-22 20:31:01
 
 '''
 
@@ -25,7 +25,7 @@ Sequences = {}
 ObjOrder = 0
 ActorsOn = [False for i in range(105)]
 global pos_rate
-pos_rate = 1
+pos_rate = 1.5
 
 
 class cameraSpeed():
@@ -91,14 +91,13 @@ class world(ShowBase):
     3D世界基类  
     '''
     def __init__(self):
-        loadPrcFileData('', 'fullscreen false')
         self.collisionHandler()
         self.setup()
+        self.setCameraSpinConst()
         self.regKey()
         self.setTasks()
         self.cameraCollision()
         self.setSky()
-        self.data = {}
 
     def getPath(self):
         '''
@@ -107,12 +106,7 @@ class world(ShowBase):
         path = os.path.abspath(sys.path[0])
         self.currentDIR = Filename.fromOsSpecific(path).getFullpath()
 
-    def setup(self):
-        '''
-        窗口初始设定  
-        常量初始化  
-        '''
-
+    def setCameraSpinConst(self):
         global prevMouseX
         global prevMouseY
         global prevMouseVal
@@ -126,8 +120,16 @@ class world(ShowBase):
         prevDys = []
         totalSmoothStore = 10
 
+    def setup(self):
+        '''
+        窗口初始设定  
+        常量初始化  
+        '''
         base.disableMouse()
         # 鼠标放在中间
+        self.data = {}
+        self.inited = False
+
         base.win.movePointer(0, int(base.win.getXSize() / 2),
                              int(base.win.getYSize() / 2))
         self.cameraSpeed = cameraSpeed()
@@ -149,17 +151,25 @@ class world(ShowBase):
         '''
         用于与GUI交互时释放焦点，卸载世界刷新任务  
         '''
+        self.spinCameraTask.remove()
         props = WindowProperties()
         props.setCursorHidden(False)
         props.setMouseMode(WindowProperties.M_absolute)
         base.win.requestProperties(props)
 
     def start(self):
+        if not self.inited:
+            self.loadmodelsinit()
+            self.calculateStarTask = base.taskMgr.add(self.calculateStar,
+                                                      'calculateStar')
+            self.detectOrdTask = base.taskMgr.add(self.detectOrd, "freshMove")
+            self.inited = True
 
-        self.detectOrdTask = base.taskMgr.add(self.detectOrd, "freshMove")
-        self.calculateStarTask = base.taskMgr.add(self.calculateStar,
-                                                  'calculateStar')
-        self.refreshActors()
+        else:
+            self.refreshActors()
+            self.calculateStarTask = base.taskMgr.add(self.calculateStar,
+                                                      'calculateStar')
+            self.detectOrdTask = base.taskMgr.add(self.detectOrd, "freshMove")
 
     def end(self):
         try:
@@ -172,13 +182,12 @@ class world(ShowBase):
         '''
         用于与GUI交互时获取焦点，加载世界刷新任务
         '''
-
         props = WindowProperties()
-        base.win.movePointer(0, int(base.win.getXSize() / 2),
-                             int(base.win.getYSize() / 2))
         props.setCursorHidden(True)
         props.setMouseMode(WindowProperties.M_relative)
         base.win.requestProperties(props)
+        self.setCameraSpinConst()
+        self.spinCameraTask = base.taskMgr.add(self.spinCamera, "spinCamera")
 
     def setTasks(self):
         '''
@@ -189,7 +198,6 @@ class world(ShowBase):
         '''
         base.taskMgr.add(self.moveCamera, "moveCamera")
         base.taskMgr.add(self.skysphereTask, "SkySphere Task")
-        base.taskMgr.add(self.spinCamera, "spinCamera")
 
     def collisionHandler(self):
         '''

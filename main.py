@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-16 11:13:54
-@LastEditTime : 2019-12-22 14:46:16
+@LastEditTime : 2019-12-22 20:20:02
 '''
 from direct.showbase.ShowBase import ShowBase
 from render import starGui, world

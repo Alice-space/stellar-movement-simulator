@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-16 08:22:23
-@LastEditTime : 2019-12-22 17:03:22
+@LastEditTime : 2019-12-22 19:51:24
 '''
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
@@ -69,6 +69,10 @@ def switch():
 
 class gui(ShowBase):
     def __init__(self):
+        loadPrcFileData('', 'fullscreen false')
+        wp = WindowProperties()
+        wp.setSize(1920, 1080)
+        base.win.requestProperties(wp)
         self.checkInit()
         self.Welcome()
         self.Tools()
