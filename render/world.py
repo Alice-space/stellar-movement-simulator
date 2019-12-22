@@ -1,173 +1,118 @@
 '''
-@Author: Alicespace
-@Date: 2019-11-18 08:06:30
-@LastEditTime : 2019-12-21 16:28:08
+
+## 用来生成3D世界  
+
+@Author: Alicespace  
+@Date: 2019-11-18 08:06:30  
+@LastEditTime : 2019-12-22 17:22:46
+
 '''
 
-import sys
-from calculate import calculateloop
-from calculate import Mem
+from calculate import calculateloop, Mem
 from direct.interval.IntervalGlobal import Sequence, Parallel
 from direct.interval.LerpInterval import LerpPosInterval
-from panda3d.core import CollisionTraverser, CollisionSphere, CollisionNode, CollisionHandlerPusher, TransparencyAttrib, TextNode, PointLight, loadPrcFile, Point3, loadPrcFileData, WindowProperties, Texture, TextureStage, DirectionalLight, AmbientLight, VBase4, TexGenAttrib
-
+from panda3d.core import CollisionHandlerQueue, CollisionHandlerEvent, CollisionTraverser, CollisionSphere, CollisionNode, CollisionHandlerPusher, TransparencyAttrib, TextNode, PointLight, loadPrcFile, Point3, loadPrcFileData, WindowProperties, Texture, TextureStage, DirectionalLight, AmbientLight, VBase4, TexGenAttrib
+from direct.particles.ParticleEffect import ParticleEffect
 from direct.showbase.ShowBase import ShowBase
-
+from panda3d.core import Filename
 from direct.task import Task
 from direct.actor import Actor
-
-# from pandac.PandaModules import WindowProperties, Texture, TextureStage, DirectionalLight, AmbientLight, TexGenAttrib
+import os, sys
 table_name = 'Star_info'
-time_rate = 3
+time_rate = 300
 Actors = {}
 Sequences = {}
 ObjOrder = 0
 ActorsOn = [False for i in range(105)]
 global pos_rate
-pos_rate = 10
-
-
-def str2list(string):
-    # Python code to convert string to list
-    li = list(map(int, list(string.split(","))))
-    return li
+pos_rate = 1
 
 
 class cameraSpeed():
     '''
-    @description:
-        a class for velocity change and effect
-    @param {type}
-        null
-    @return:
-        null
+    摄像机速度控制类
     '''
-    defaultMoveSpeed = 10
-    minVelocity = 0.001
-    velocityDecayRate = 0.5
-    Vx = 0
-    Vy = 0
-    Vz = 0
+    def __init__(self):
+        self.defaultMoveSpeed = 10
+        self.minVelocity = 0.001
+        self.velocityDecayRate = 0.5
+        self.Vx = 0
+        self.Vy = 0
+        self.Vz = 0
 
     def addVx(self, dt):
-        cameraSpeed.Vx += self.defaultMoveSpeed * dt
+        '''
+        更改x速度
+        '''
+        self.Vx += self.defaultMoveSpeed * dt
 
     def addVy(self, dt):
-        cameraSpeed.Vy += self.defaultMoveSpeed * dt
+        '''
+        更改y速度
+        '''
+        self.Vy += self.defaultMoveSpeed * dt
 
     def addVz(self, dt):
-        cameraSpeed.Vz += self.defaultMoveSpeed * dt
+        '''
+        更改z速度
+        '''
+        self.Vz += self.defaultMoveSpeed * dt
 
     def slideX(self):
-        if (abs(cameraSpeed.Vx) <= self.minVelocity):
-            cameraSpeed.Vx = 0
-        if (cameraSpeed.Vx != 0):
-            cameraSpeed.Vx *= self.velocityDecayRate
+        '''
+        x方向滑动动画
+        '''
+        if (abs(self.Vx) <= self.minVelocity):
+            self.Vx = 0
+        if (self.Vx != 0):
+            self.Vx *= self.velocityDecayRate
 
     def slideY(self):
-        if (abs(cameraSpeed.Vy) <= self.minVelocity):
-            cameraSpeed.Vy = 0
-        if (cameraSpeed.Vy != 0):
-            cameraSpeed.Vy *= self.velocityDecayRate
+        '''
+        y方向滑动动画
+        '''
+        if (abs(self.Vy) <= self.minVelocity):
+            self.Vy = 0
+        if (self.Vy != 0):
+            self.Vy *= self.velocityDecayRate
 
     def slideZ(self):
-        if (abs(cameraSpeed.Vz) <= self.minVelocity):
-            cameraSpeed.Vz = 0
-        if (cameraSpeed.Vz != 0):
-            cameraSpeed.Vz *= self.velocityDecayRate
+        '''
+        z方向滑动动画
+        '''
+        if (abs(self.Vz) <= self.minVelocity):
+            self.Vz = 0
+        if (self.Vz != 0):
+            self.Vz *= self.velocityDecayRate
 
 
 class world(ShowBase):
-    '''
-    @description:
-        enter point of the main function
-    @param {type}
-        ShowBase {ShowBase}
-    @return:
-        null
+    ''' 
+    3D世界基类  
     '''
     def __init__(self):
         loadPrcFileData('', 'fullscreen false')
-        self.test()
+        self.collisionHandler()
         self.setup()
         self.regKey()
-        self.setConst()
         self.setTasks()
         self.cameraCollision()
         self.setSky()
+        self.data = {}
+
+    def getPath(self):
+        '''
+        绝对路径获取  
+        '''
+        path = os.path.abspath(sys.path[0])
+        self.currentDIR = Filename.fromOsSpecific(path).getFullpath()
 
     def setup(self):
-        # some properties about window and mouse
-        base.disableMouse()
-        base.win.movePointer(0, int(base.win.getXSize() / 2),
-                             int(base.win.getYSize() / 2))
-        # instance a speed object
-        self.cameraSpeed = cameraSpeed()
+        '''
+        窗口初始设定  
+        常量初始化  
+        '''
 
-    def cameraCollision(self):
-        base.cTrav = CollisionTraverser()
-        pusher = CollisionHandlerPusher()
-        fromObject = base.camera.attachNewNode(CollisionNode('colNode'))
-        fromObject.node().addSolid(CollisionSphere(0, 0, 0, 5))
-        pusher = CollisionHandlerPusher()
-        pusher.addCollider(fromObject, base.camera, base.drive.node())
-        base.cTrav.addCollider(fromObject, pusher)
-
-    def takeMouseAway(self):
-        props = WindowProperties()
-        props.setCursorHidden(False)
-        props.setMouseMode(WindowProperties.M_absolute)
-        base.win.requestProperties(props)
-        try:
-            self.detectOrdTask.remove()
-            self.calculateStarTask.remove()
-        except:
-            pass
-
-    def takeMouseBack(self):
-        props = WindowProperties()
-        base.win.movePointer(0, int(base.win.getXSize() / 2),
-                             int(base.win.getYSize() / 2))
-        props.setCursorHidden(True)
-        props.setMouseMode(WindowProperties.M_relative)
-        base.win.requestProperties(props)
-        self.detectOrdTask = base.taskMgr.add(self.detectOrd, "freshMove")
-        self.calculateStarTask = base.taskMgr.doMethodLater(
-            2, self.calculateStar, 'calculateStar')
-        self.refreshActors()
-
-    def setTasks(self):
-        # add camera move task
-        base.taskMgr.add(self.moveCamera, "moveCamera")
-        base.taskMgr.add(self.skysphereTask, "SkySphere Task")
-        base.taskMgr.add(self.spinCamera, "spinCamera")
-
-    def regKey(self):
-        # store keyMap
-        self.keyMap = {
-            "left": 0,
-            "right": 0,
-            "forward": 0,
-            "backward": 0,
-            "up": 0,
-            "down": 0
-        }
-        # add key events
-        self.accept("q", self.quitMain)
-        self.accept("a", self.setKey, ["left", True])
-        self.accept("d", self.setKey, ["right", True])
-        self.accept("w", self.setKey, ["forward", True])
-        self.accept("s", self.setKey, ["backward", True])
-        self.accept("space", self.setKey, ["up", True])
-        self.accept("lshift", self.setKey, ["down", True])
-        self.accept("a-up", self.setKey, ["left", False])
-        self.accept("d-up", self.setKey, ["right", False])
-        self.accept("w-up", self.setKey, ["forward", False])
-        self.accept("s-up", self.setKey, ["backward", False])
-        self.accept("space-up", self.setKey, ["up", False])
-        self.accept("lshift-up", self.setKey, ["down", False])
-
-    def setConst(self):
         global prevMouseX
         global prevMouseY
         global prevMouseVal
@@ -181,16 +126,133 @@ class world(ShowBase):
         prevDys = []
         totalSmoothStore = 10
 
+        base.disableMouse()
+        # 鼠标放在中间
+        base.win.movePointer(0, int(base.win.getXSize() / 2),
+                             int(base.win.getYSize() / 2))
+        self.cameraSpeed = cameraSpeed()
+        self.getPath()
+
+    def cameraCollision(self):
+        '''
+        注册摄像机与星体表面的碰撞处理函数  
+        '''
+        base.cTrav = CollisionTraverser()
+        pusher = CollisionHandlerPusher()
+        fromObject = base.camera.attachNewNode(CollisionNode('cameracol'))
+        fromObject.node().addSolid(CollisionSphere(0, 0, 0, 5))
+        pusher = CollisionHandlerPusher()
+        pusher.addCollider(fromObject, base.camera, base.drive.node())
+        base.cTrav.addCollider(fromObject, pusher)
+
+    def takeMouseAway(self):
+        '''
+        用于与GUI交互时释放焦点，卸载世界刷新任务  
+        '''
+        props = WindowProperties()
+        props.setCursorHidden(False)
+        props.setMouseMode(WindowProperties.M_absolute)
+        base.win.requestProperties(props)
+
+    def start(self):
+
+        self.detectOrdTask = base.taskMgr.add(self.detectOrd, "freshMove")
+        self.calculateStarTask = base.taskMgr.add(self.calculateStar,
+                                                  'calculateStar')
+        self.refreshActors()
+
+    def end(self):
+        try:
+            self.detectOrdTask.remove()
+            self.calculateStarTask.remove()
+        except:
+            pass
+
+    def takeMouseBack(self):
+        '''
+        用于与GUI交互时获取焦点，加载世界刷新任务
+        '''
+
+        props = WindowProperties()
+        base.win.movePointer(0, int(base.win.getXSize() / 2),
+                             int(base.win.getYSize() / 2))
+        props.setCursorHidden(True)
+        props.setMouseMode(WindowProperties.M_relative)
+        base.win.requestProperties(props)
+
+    def setTasks(self):
+        '''
+        添加控制任务  
+        1. 摄像机移动  
+        2. 天空球移动  
+        3. 摄像机旋转  
+        '''
+        base.taskMgr.add(self.moveCamera, "moveCamera")
+        base.taskMgr.add(self.skysphereTask, "SkySphere Task")
+        base.taskMgr.add(self.spinCamera, "spinCamera")
+
+    def collisionHandler(self):
+        '''
+        注册星体相互碰撞的事件处理函数
+        '''
+        self.collHandEvent = CollisionHandlerEvent()
+        self.collHandEvent.addInPattern('%fn-into-%in')
+        self.accept('starscol-into-starscol', self.handleStarCollision)
+
+    def handleStarCollision(self, entry):
+        '''
+        星体碰撞的粒子效果
+        '''
+        base.enableParticles()
+        p = ParticleEffect()
+        p.loadConfig(self.currentDIR + '/res/config/dust.ptf')
+        p.start(parent=base.render, renderParent=base.render)
+        p.setPos(entry.getSurfacePoint(base.render))
+        # TODO 视觉效果不明显，换一个？
+        p.setScale(1000000)
+
+    def regKey(self):
+        '''
+        注册按键响应事件
+        '''
+        # store keyMap
+        self.keyMap = {
+            "left": 0,
+            "right": 0,
+            "forward": 0,
+            "backward": 0,
+            "up": 0,
+            "down": 0
+        }
+        # add key events
+        self.accept("a", self.setKey, ["left", True])
+        self.accept("d", self.setKey, ["right", True])
+        self.accept("w", self.setKey, ["forward", True])
+        self.accept("s", self.setKey, ["backward", True])
+        self.accept("space", self.setKey, ["up", True])
+        self.accept("lshift", self.setKey, ["down", True])
+        self.accept("a-up", self.setKey, ["left", False])
+        self.accept("d-up", self.setKey, ["right", False])
+        self.accept("w-up", self.setKey, ["forward", False])
+        self.accept("s-up", self.setKey, ["backward", False])
+        self.accept("space-up", self.setKey, ["up", False])
+        self.accept("lshift-up", self.setKey, ["down", False])
+
     def setSky(self):
+        '''
+        加载天空球
+        '''
         # load sky sphere
-        self.skysphere = base.loader.loadModel("res/skyBg/InvertedSphere.egg")
+        self.skysphere = base.loader.loadModel(self.currentDIR +
+                                               "/res/skyBg/InvertedSphere.egg")
         self.skysphere.setTexGen(TextureStage.getDefault(),
                                  TexGenAttrib.MWorldPosition)
         self.skysphere.setTexProjector(TextureStage.getDefault(), base.render,
                                        self.skysphere)
         self.skysphere.setTexPos(TextureStage.getDefault(), 0, 0, 0)
         self.skysphere.setTexScale(TextureStage.getDefault(), .5)
-        tex = base.loader.loadCubeMap("res/skyBg/BlueGreenNebula__#.png")
+        tex = base.loader.loadCubeMap(self.currentDIR +
+                                      "/res/skyBg/BlueGreenNebula__#.png")
         self.skysphere.setTexture(tex)
         self.skysphere.setLightOff()
         self.skysphere.setScale(10000)
@@ -199,19 +261,25 @@ class world(ShowBase):
         self.skysphere.setDepthWrite(0)
         self.skysphere.reparentTo(base.render)
 
-    def quitMain(self):
-        sys.exit()
-
     def skysphereTask(self, task):
+        '''
+        移动天空球
+        '''
         self.skysphere.setPos(base.camera, 0, 0, 0)
         return task.cont
 
-    # Records the state of the arrow keys
+    # Records thse state of the arrow keys
     def setKey(self, key, value):
+        '''
+        注册按键函数
+        '''
         self.keyMap[key] = value
 
     # Define a procedure to move the camera.
     def moveCamera(self, task):
+        '''
+        注册```Panda```任务来移动摄像机
+        '''
         dt = globalClock.getDt()
 
         # deal with movement events
@@ -240,31 +308,18 @@ class world(ShowBase):
                 self.cameraSpeed.slideY()
             self.cameraSpeed.addVy(-dt)
             isYMoved = True
-        '''
-        if self.keyMap["up"]:
-            if self.cameraSpeed.Vz < 0:
-                self.cameraSpeed.slideZ()
-            self.cameraSpeed.addVz(dt)
-            isZMoved = True
-        if self.keyMap["down"]:
-            if self.cameraSpeed.Vz > 0:
-                self.cameraSpeed.slideZ()
-            self.cameraSpeed.addVz(-dt)
-            isZMoved = True
-        '''
         if not isXMoved:
             self.cameraSpeed.slideX()
         if not isYMoved:
             self.cameraSpeed.slideY()
-        '''
-        if not isZMoved:
-            self.cameraSpeed.slideZ()
-        '''
         base.camera.setX(base.camera, self.cameraSpeed.Vx * 0.5)
         base.camera.setY(base.camera, self.cameraSpeed.Vy)
         return task.cont
 
     def spinCamera(self, task):
+        '''
+        注册```Panda```任务来旋转摄像机
+        '''
         global prevMouseX
         global prevMouseY
         global prevMouseVal
@@ -310,6 +365,9 @@ class world(ShowBase):
         return task.cont
 
     def detectOrd(self, task):
+        '''
+        检测```calculate```模块的```order```，判断是否发生融合事件
+        '''
         global objs
         global ObjOrder
         if Mem.triggerstate is False:
@@ -327,6 +385,9 @@ class world(ShowBase):
             return task.cont
 
     def refreshActors(self):
+        '''
+        判断发生融合事件后，进行从新加载世界操作
+        '''
         global Actors
         global ActorsOn
         global Sequences
@@ -337,11 +398,21 @@ class world(ShowBase):
         Sequences = {}
         self.loadmodelsinit()
 
+    def getData(self):
+        '''
+        向GUI返回星体运动数据供显示
+        '''
+        return objs, self.data
+
     def refreshSequence(self, obj):
+        '''
+        更新```Panda```序列，用于控制形体的运动
+        '''
         global Sequences, pos_rate
         if Sequences[obj.ID][0].isStopped() and ActorsOn[obj.ID] is True:
             Sequences[obj.ID] = Sequence()
             data = obj.dataOUT()
+            self.data[obj.ID] = data
             Sequences[obj.ID].append(Actors[obj.ID].posInterval(
                 data[0] * time_rate,
                 Point3(data[4] * pos_rate, data[5] * pos_rate,
@@ -349,22 +420,39 @@ class world(ShowBase):
             Sequences[obj.ID].start()
 
     def calculateStar(self, task):
-        calculateloop.loopjudge(length=1200)
+        '''
+        注册```Panda```任务，调用```calculate```进行计算
+        '''
+        calculateloop.loopjudge(length=100000)
         # task.delayTime += 1
-        return task.again
+        return task.cont
+
+    def changeTimeRate(self, newRate):
+        '''
+        GUI调整时间比例的接口函数
+        '''
+        global time_rate
+        time_rate = newRate
 
     def loadmodelsinit(self):
-        calculateloop.loopjudge(length=1200)
+        '''
+        初始化世界，加载星体模型，创建恒星粒子效果
+        '''
+
+        calculateloop.loopjudge(length=100000)
         global objs
         global Actors
         global ActorsOn
         global pos_rate
         objs = Mem.getcurrentobjects()
         for obj in objs:
-
             data = obj.dataOUT()
             ActorsOn[obj.ID] = True
-            Actors[obj.ID] = base.loader.loadModel(obj.texture)
+            Actors[obj.ID] = base.loader.loadModel(
+                self.currentDIR + '/res/sphereTemplate/smiley.egg')
+            tex = base.loader.loadTexture(obj.texture)
+            Actors[obj.ID].setTexture(tex, 1)
+
             # Reparent the model to render.
             Actors[obj.ID].reparentTo(base.render)
             # Apply scale and position transforms on the model.
@@ -372,36 +460,23 @@ class world(ShowBase):
             Actors[obj.ID].setPos(data[4] * pos_rate, data[5] * pos_rate,
                                   data[6] * pos_rate)
 
-            fromObject = Actors[obj.ID].attachNewNode(CollisionNode('colNode'))
-            fromObject.node().addSolid(CollisionSphere(0, 0, 0, 5))
+            fromObject = Actors[obj.ID].attachNewNode(
+                CollisionNode('starscol'))
+            fromObject.node().addSolid(CollisionSphere(0, 0, 0, 1.15))
             Actors[obj.ID].setScale(obj.radius * pos_rate)
-            pusher = CollisionHandlerPusher()
-            pusher.addCollider(fromObject, Actors[obj.ID])
-            # base.cTrav.addCollider(fromObject, pusher)
+            base.cTrav.addCollider(fromObject, self.collHandEvent)
+            if obj.objtype == 'Ostar' or obj.objtype == 'Gstar':
+                base.enableParticles()
+                p = ParticleEffect()
+                p.loadConfig(self.currentDIR + '/res/config/dust.ptf')
+                p.start(parent=Actors[obj.ID], renderParent=Actors[obj.ID])
         global Sequences
         for obj in objs:
             Sequences[obj.ID] = Sequence()
             data = obj.dataOUT()
+            self.data[obj.ID] = data
             Sequences[obj.ID].append(Actors[obj.ID].posInterval(
                 data[0] * time_rate,
                 Point3(data[4] * pos_rate, data[5] * pos_rate,
                        data[6] * pos_rate)))
             Sequences[obj.ID].start()
-
-    def test(self):
-        Mem.createobject(objtype="star",
-                         texture="res/tmp/earth/earth.egg",
-                         mass=20,
-                         radius=20,
-                         cor=[150, 0, 0],
-                         vel=[0, -11, 0])
-        Mem.createobject(objtype="star",
-                         texture="res/tmp/earth/earth.egg",
-                         mass=30,
-                         radius=30,
-                         cor=[210, 340, 0],
-                         vel=[0, -10, 0])
-
-        calculateloop.loopjudge(length=120)
-        global objs
-        objs = Mem.getcurrentobjects()

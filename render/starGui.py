@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-16 08:22:23
-@LastEditTime : 2019-12-20 13:18:13
+@LastEditTime : 2019-12-22 17:03:22
 '''
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
@@ -13,76 +13,69 @@ from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
 from panda3d.core import *
 from panda3d.core import TransparencyAttrib
-from calculate.Mem import createobject
+from calculate.Mem import createobject, reinitialize
 from render import world
 import sys, csv, os, random
+import tkinter as tk
+from tkinter import filedialog
 
-t_k1 = 'Choose a card to define your star\n\n  press \"Esc\" to close the menu'
-t_k2 = 'Thank you for pressing \"Enter\" while inputting Args'
+#tips or welcome
+t_k1 = 'Choose a card and click it to define your star'
+t_k2 = 'Press \"R\" to run\n\nPress \"Q\" to hide the Menu'
+t_k3 = 'You can click \1pink\1\"Various\"\2 to design you own star!!!'
 t_k0 = "\1roman\1\1slant\1Hello! Welcome to our\n\1blood\1Stellar Motion Model\'\'\2\2\n \
 \1slant\1Hope you enjoy yourself\2"
 
-#TextProperty
-tp = TextPropertiesManager.getGlobalPtr()
-
-
-class prop():
-    def font(self, filepath, name):
-        self.font = loader.loadFont(filepath)
-        tpF = TextProperties()
-        tpF.setFont(self.font)
-        tp.setProperties(name, tpF)
-
-    def fg(self, name, r, g, b, a):
-        tpG = TextProperties()
-        tpG.setTextColor(r, g, b, a)
-        tp.setProperties(name, tpG)
-
-
+#tools
 path = 'res/card/'
-blgr, light, green, blue, blood, erro, cutoff, Roman = prop(), prop(), prop(
-), prop(), prop(), prop(), prop(), prop()
-light.fg('light', 0.8, 1, 0.5, 1)
-blgr.fg('blgr', 0.5, 1, 0.9, 1)
-green.fg('green', 0, 0.4, 1, 1)
-blue.fg('blue', 0.1, 0.3, 0.8, 1)
-blood.fg('blood', 0.83, 0.39, 0.44, 1)
-erro.fg('red', 1, 0.2, 0, 1)
-cutoff.fg('white', 1, 1, 1, 1)
-Roman.font('cmtt12', 'roman')
-star1,star2,earth,sata=loader.loadTexture( path+'11211.jpg'),\
-                        loader.loadTexture(path+'11511.jpg'),\
-                        loader.loadTexture(path+'11311.jpg'),\
-                        loader.loadTexture(path+'11411.jpg')
-im = [earth, sata, star1, star2]
+purp, gray, pink, blgr, light, green, blue, blood, erro, cutoff, Roman = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+im, star1, star2, e_planet, g_planet, default_texture = 1, 1, 1, 1, 1, 1
 
 #some mess and their explanation
+timeRateBar = 1
 tip = ''  #str object for checking whether to give tips or not
-Tip1, Tip2 = 1, 1  #tips
+ftip, stip, ttip = 1, 2, 3  #tips
+Filepath = default_texture  #filepath to load texture(temporary)
+f, bv = 0, 0  #arg to see if file is chosen(temporary)
 initTextObject, StartButton = 1, 1  #Welcom direct
 StarMenu, StarMenucanvas = 1, 1  #Main menu and its canvas to move
 size = (0, 0.996, -1.3, 1)  #Initial StarMenu['frameSize']
 entryList, entryErroList = 1, 1  #While creating a card(temporary)
 typeCard, typeframe = list(range(4)), list(range(4))  #4 types of stars
-creatCard = 1  #Datas inquiry to create a card(once a time, usually destroied
+creatCard, Lazy = 1, 1  #Datas inquiry to create a card(once a time, usually destroied
 sd = list('h' * 9)  #Datas(temporary)
 StarCopy,mycard,MyStar,Cframe,ChArg,velo,posi=[],[],[],[],[],[],[]
-
-
 #Stars' name ,card ,exactlly what the stars are,information card,
 #argument to help see if the Cframe is open,
 #velocity and position datas of all stars(Though they are just entries)
 #main to import
+
+
+def switch():
+    global sw, world
+    if sw == 1:
+        try:
+            world.start()
+        except:
+            pass
+        sw = sw * (-1)
+    else:
+        try:
+            world.end()
+        except:
+            pass
+        sw = sw * (-1)
+
+
 class gui(ShowBase):
     def __init__(self):
-        #self.quitMain()
         self.checkInit()
         self.Welcome()
+        self.Tools()
+        global sw
+        sw = 1
 
-    def quitMain(self):
-        sys.exit()
-
-    def Welcome(self):
+    def Welcome(self):  #welcom
         global initTextObject, StartButton
         initTextObject = OnscreenText(text=t_k0,
                                       pos=(0.0, 0.25),
@@ -97,9 +90,47 @@ class gui(ShowBase):
                                    relief=0,
                                    command=self.begin)
 
-    #base.buttonThrowers[0].node().setButtonDownEvent('anyButton')
+    #TextProperty, various textproperties are assigned here
+    def Tools(self):
+        global im,star1,star2,e_planet,g_planet,\
+               default_texture,path,purp,gray,pink,blgr, light, green, blue, blood, erro, cutoff, Roman
+        tp = TextPropertiesManager.getGlobalPtr()
 
-    def checkInit(self):
+        class prop():
+            def font(self, filepath, name):
+                self.font = loader.loadFont(filepath)
+                tpF = TextProperties()
+                tpF.setFont(self.font)
+                tp.setProperties(name, tpF)
+
+            def fg(self, name, r, g, b, a):
+                tpG = TextProperties()
+                tpG.setTextColor(r, g, b, a)
+                tp.setProperties(name, tpG)
+
+        path = 'res/card/'
+        purp, gray, pink, blgr, light, green, blue, blood, erro, cutoff, Roman = prop(
+        ), prop(), prop(), prop(), prop(), prop(), prop(), prop(), prop(
+        ), prop(), prop()
+        purp.fg('purp', 0.8, 0.57, 0.95, 3.4)
+        gray.fg('gray', 0.76, 0.75, 0.77, 1)
+        pink.fg('pink', 0.86, 0.25, 0.6, 1)
+        light.fg('light', 0.8, 1, 0.5, 2)
+        blgr.fg('blgr', 0.5, 1, 0.9, 1.4)
+        green.fg('green', 0, 0.4, 1, 1.5)
+        blue.fg('blue', 0.3, 0.5, 0.8, 1)
+        blood.fg('blood', 0.83, 0.39, 0.44, 2)
+        erro.fg('red', 1, 0.2, 0, 2)
+        cutoff.fg('white', 1, 1, 1, 1)
+        Roman.font('cmtt12', 'roman')
+        star1,star2,e_planet,g_planet=loader.loadTexture( path+'11411.jpg'),\
+                                loader.loadTexture(path+'11511.jpg'),\
+                                loader.loadTexture(path+'11211.jpg'),\
+                                loader.loadTexture(path+'11311.jpg')
+        default_texture = 'res/texture/default.jpg'  ###可以改
+        im = [e_planet, g_planet, star1, star2]
+
+    def checkInit(self):  #get tip in the csv file to use later
         global tip
         if os.path.exists('res/config/Tips.csv'):
             with open(
@@ -113,20 +144,20 @@ class gui(ShowBase):
         else:
             pass
 
-    def begin(self):
+    def begin(self):  #the world begin to load and open menu
         global world
         world = world.world()
         initTextObject.destroy()
         StartButton.destroy()
-        if 'Tip1' in tip:
+        if 'Ftip' in tip:
             pass
         else:
-            self.Tip_1()
+            self.Ftip()
         self.OpenMenu()
 
-    def Tip_1(self):
-        global Tip1
-        Tip1 = YesNoDialog(text=t_k1,
+    def Ftip(self):  #first tip
+        global ftip
+        ftip = YesNoDialog(text=t_k1,
                            scale=1,
                            pos=(-0.02, 0, 0.22),
                            buttonTextList=['No tips', '\tNext'],
@@ -134,24 +165,24 @@ class gui(ShowBase):
                            midPad=0.22,
                            button_relief=0,
                            relief=1,
-                           command=self.Tip_2)
+                           command=self.Stip)
 
-    def Tip_2(self, x):
-        global Tip2
+    def Stip(self, x):  #second tip
+        global stip
         if x:
             pass
         else:
             with open('res/config/Tips.csv', 'a') as tips:
                 writer = csv.writer(tips)
-                writer.writerow('Tip1')
+                writer.writerow('Ftip')
         try:
-            Tip1.destroy()
+            ftip.destroy()
         except:
             pass
-        if 'Tip2' in tip:
+        if 'Stip' in tip:
             pass
         else:
-            Tip2 = YesNoCancelDialog(
+            stip = YesNoCancelDialog(
                 text=t_k2,
                 scale=1,
                 pos=(-0.02, 0, 0.22),
@@ -162,17 +193,38 @@ class gui(ShowBase):
                 relief=1,
                 command=self.tip_pau)
 
-    def tip_pau(self, x):
-        Tip2.destroy()
+    def tip_pau(self, x):  #a tip pause
+        stip.destroy()
         if x == 0:
             with open('res/config/Tips.csv', 'a') as tips:
                 writer = csv.writer(tips)
-                writer.writerow('Tip2')
+                writer.writerow('Stip')
         elif x == -1:
-            self.Tip_1()
+            self.Ftip()
 
-    def OpenMenu(self):
-        global StarMenu, StarMenucanvas
+    def Ttip(self):  #third tip
+        global ttip
+        ttip = YesNoDialog(text=t_k3,
+                           scale=1,
+                           pos=(-0.02, 0, 0.22),
+                           buttonTextList=['No tips', '\tClose'],
+                           buttonValueList=[0, 1],
+                           midPad=0.22,
+                           button_relief=0,
+                           relief=1,
+                           command=self.tip_spau)
+
+    def tip_spau(self, x):  #second tip pause
+        if x:
+            pass
+        else:
+            with open('res/config/Tips.csv', 'a') as tips:
+                writer = csv.writer(tips)
+                writer.writerow('Ttip')
+        ttip.destroy()
+
+    def OpenMenu(self):  #the menu(a scolled frame)
+        global StarMenu, StarMenucanvas, mycard, timeRateBar
         global world
         try:
             world.takeMouseAway()
@@ -187,14 +239,39 @@ class gui(ShowBase):
         StarMenucanvas = StarMenu.getCanvas()
         StarMenucanvasParent = StarMenucanvas.getParent()
 
+        timeRateBar = DirectScrollBar(
+            parent=StarMenu,
+            value=20,
+            range=(0, 80),
+            pageSize=2,
+            scrollSize=1,
+            pos=(-1, 0, 0.92),
+            frameSize=(-0.6, 0.6, -0.045, 0),
+            frameColor=(0.2, 0.43, 0.88, 0.2),
+            manageButtons=True,
+            resizeThumb=True,
+            command=self.CRT,
+            thumb_relief=1,
+            thumb_frameTexture='res/texture/pr.jpg',
+            incButton_relief=1,
+            incButton_frameTexture='res/texture/timr.jpg',
+            decButton_relief=1,
+            decButton_frameTexture='res/texture/timl.jpg')
+        timeLabel = DirectLabel(
+            parent=timeRateBar,
+            text=
+            '\1purp\1* Time Proportional Scale *\2\n|                |                |\n10^5           10^6            10^7           10^8           10^9',
+            relief=0,
+            scale=0.06,
+            pos=(0, 0, 0.02))
+
         self.Species()
         Cut_off = geneFrame(StarMenucanvas, (0, 0.965, -0.02, 0),
                             (0, 0, -0.073), (0.5, 0.5, 0.5, 1), 2)
         cut_off = geneText(Cut_off.frame, '\1white\1.\2' * 42, 0.1,
                            (0.47, -0.011, 0))
         try:
-            for ID in range(len(MyStar)):
-                MyStar[ID].Card(0)
+            MyStar[0].Card(0)
         except:
             pass
 
@@ -238,31 +315,42 @@ class gui(ShowBase):
             return task.cont
 
         base.accept('mouse1', startScroll)
-        base.accept('q', self.closeMenu)
+        base.accept('q', self.hideMenu)
+        base.accept('r', switch)
+        '''MyTask = taskMgr.doMethodLater(0.1, StarCard().updating)'''
+    def CRT(self):
+        rate = timeRateBar['value']
+        world.changeTimeRate(rate)
 
-    def closeMenu(self):
-        global StarMenu, size
+    def hideMenu(self):
+        global StarMenu, world
         StarMenu.hide()
-        base.accept('q', self.OpenMenu)
+        world.takeMouseBack()
+        base.accept('q', self.showMenu)
 
-    def Species(self):
+    def showMenu(self):
+        global StarMenu, world
+        StarMenu.show()
+        world.takeMouseAway()
+        base.accept('q', self.hideMenu)
+
+    def Species(self):  #four basic cards to create object
         global typeCard, typeframe
         typeText = [
             '\1light\1Planet\2', '\1light\1Satalite\2', '\1light\1Star One\2',
             '\1light\1Star Two\2'
         ]
         for i in range(4):
-            typeframe[i] = DirectFrame(
-                parent=StarMenucanvas,
-                frameSize=(0, 0.955, -0.26, 0),
-                pos=(0, 0, 1 - 0.27 * i),
-                relief=1,
-                frameTexture=path + '11' + str(i + 2) + '1.jpg',
-                image_scale=0.25,
-                #geom=,
-                text=typeText[i],
-                text_pos=(0.8, -0.23, 0),
-                text_scale=0.05)
+            typeframe[i] = DirectFrame(parent=StarMenucanvas,
+                                       frameSize=(0, 0.955, -0.26, 0),
+                                       pos=(0, 0, 1 - 0.27 * i),
+                                       relief=1,
+                                       frameTexture=path + '11' + str(i + 2) +
+                                       '1.jpg',
+                                       image_scale=0.25,
+                                       text=typeText[i],
+                                       text_pos=(0.8, -0.23, 0),
+                                       text_scale=0.05)
             typeCard[i] = DirectCheckButton(
                 parent=typeframe[i],
                 relief=0,
@@ -273,13 +361,20 @@ class gui(ShowBase):
                 command=self.creat,
                 extraArgs=[i])  #i is the order of the type
 
-    def creat(self, x, i, n=0, y=-1):
-        global creatCard, entryList, entryErroList, sd
+    def creat(self, x, i, n=0, y=-1):  #generate a frame to get args
+        global creatCard, entryList, entryErroList, sd, f, bv
+        if bv:
+            pass
+        else:
+            if 'Ttip' in tip:
+                pass
+            else:
+                self.Ttip()
         try:
             creatCard.frame.destroy()
         except:
             pass
-        sd = list('h' * 9)
+        sd, f, bv, Filepath = list('h' * 9), 0, 1, default_texture
         creatCard = geneFrame(StarMenu, (0, 0.8, -1, 1), (-2.84, 0, 0),
                               (0.7, 0.7, 0.2, 1), 1)
         creatCard.frame['frameTexture'] = path + 'z' + str(i + 1) + '.jpg'
@@ -332,15 +427,75 @@ class gui(ShowBase):
             buttonTextList=['\1blgr\1Close\2', '\1blgr\1Done\2'],
             buttonValueList=[0, 1],
             scale=0.8,
-            pos=(0.56, 0, -0.69),
+            pos=(0.56, 0, -0.7511),
             relief=0,
-            button_relief=0,
+            button_relief=2,
             command=self.closeE,
             extraArgs=[i, y, n])
+        textureSet = YesNoDialog(
+            parent=creatCard.frame,
+            buttonTextList=['\1gray\1I\'m lazy\2', '\1pink\1Various\2'],
+            buttonValueList=[0, 1],
+            scale=0.8,
+            pos=(0.56, 0, -0.64),
+            relief=0,
+            button_relief=2,
+            command=self.choseTexture)
+        textureSet['button_frameTexture'] = closeEntry[
+            'button_frameTexture'] = creatCard.frame['frameTexture']
+        base.ignore('q')
+        base.ignore('r')
+
+    def choseTexture(self, x):  #give a tk or list to choose texture
+        global Filepath, f, Lazy
+        if x:
+            root = tk.Tk()
+            root.withdraw()
+            Filepath = filedialog.askopenfilename()  #获得选择好的文件
+        else:
+            Lazy = DirectScrolledList(
+                parent=creatCard.frame,
+                decButton_pos=(0.4, 0, 0.67),
+                decButton_text="Dec",
+                decButton_text_scale=0.07,
+                decButton_borderWidth=(0.005, 0.005),
+                incButton_pos=(0.4, 0, -0.47),
+                incButton_text="Inc",
+                incButton_text_scale=0.084,
+                incButton_borderWidth=(0.005, 0.005),
+                frameSize=(0.0, 0.84, -0.5, 0.73),
+                frameColor=(0.76, 0.75, 0.77, 1),
+                pos=(0, 0, 0),
+                items=[],
+                numItemsVisible=3,
+                forceHeight=0.35,
+                itemFrame_frameSize=(-0.4, 0.4, -0.75, 0.3),
+                itemFrame_pos=(0.42, 0, 0.35),
+            )
+            for root, dir, files in os.walk('res/texture'):
+                for file in files:
+                    texture_path = os.path.join(
+                        root, file).encode('utf-8').decode('gbk')
+                    b = DirectButton(frameTexture=texture_path,
+                                     text_scale=0.38,
+                                     text='ASD',
+                                     text_fg=(0, 0, 0, 0),
+                                     relief=1,
+                                     command=self.closeList,
+                                     extraArgs=[texture_path])
+                    Lazy.addItem(b)
+        f = 1
+
+    def closeList(self, texture):  #get chosen texture path
+        global Filepath, Lazy
+        Filepath = texture
+        Lazy.destroy()
 
     def closeE(self, x, i, y, n=0):
-        global entryList, entryErroList, creatCard, MyStar, StarCopy, ChArg, Cframe, velo, posi, size, StarMenu
+        #close the args assignment frame and creste object
+        global rr, entryList, entryErroList, creatCard, MyStar, StarCopy, ChArg, Cframe, velo, posi, size, StarMenu
         dd = 1
+        Type = ['Eplanet', 'Jplanet', 'Ostar', 'Gstar']
         if x:
             sd[0] = entryList[0].entry.get()
             for le in range(1, len(sd)):
@@ -360,50 +515,56 @@ class gui(ShowBase):
                     continue
             if dd:
                 if n:
+                    if Filepath == default_texture:
+                        texture = MyStar[y].texture
+                    else:
+                        texture = Filepath
                     mycard[y].destroy()
-                    ty = MyStar[y].ty
                     del MyStar[y]
                     star = StarCard(sd[0], sd[1], sd[2], [sd[3], sd[4], sd[5]],
-                                    [sd[6], sd[7], sd[8]], ty)
+                                    [sd[6], sd[7], sd[8]], i, texture)
                     StarCopy[y] = star.name
                     MyStar.insert(y, star)
                     star.Card(0)
-                    '''for star in MyStar:
-                        creatobject(star.type,
-                                     star.Im,
+                    for star in MyStar:
+                        createobject(Type[i],
+                                     MyStar[y].texture,
                                      myname=star.name,
                                      mass=star.mas,
                                      radius=star.rad,
                                      vel=star.vel,
-                                     cor=star.pos)'''
+                                     cor=star.pos)
 
                 else:
-                    '''creatobject(ty[i],
-                                texture,
-                                myname=sd[0],
-                                mass=sd[1],
-                                radius=sd[2],
-                                vel=[sd[6],sd[7],sd[8]],
-                                cor=[sd[3],sd[4],sd[5]])'''
+                    createobject(Type[i],
+                                 Filepath,
+                                 myname=sd[0],
+                                 mass=sd[1],
+                                 radius=sd[2],
+                                 vel=[sd[6], sd[7], sd[8]],
+                                 cor=[sd[3], sd[4], sd[5]])
                     if not sd[0]:
                         sd[0] = 'Hapy'
                     star = StarCard(sd[0], sd[1], sd[2], [sd[3], sd[4], sd[5]],
-                                    [sd[6], sd[7], sd[8]], i)
-                    MyStar.append(star)
-                    StarCopy.append(star.name)
-                    ChArg.append(0)
-                    Cframe.append(1)
-                    velo.append(1)
-                    posi.append(1)
-                    star.Card(0)
+                                    [sd[6], sd[7], sd[8]], i, Filepath)
+                    MyStar.append(star)  #object
+                    StarCopy.append(star.name)  #name of object
+                    ChArg.append(0)  #open or not index
+                    Cframe.append(1)  #inspect data
+                    velo.append(1)  #vel_entry
+                    posi.append(1)  #posi_entry
+                    star.Card(0)  #generate a card
                     Length = StarMenu['canvasSize']
-                    size = (0, 0.996, Length[2] - 1, 1)
+                    size = (0, 0.996, Length[2] - 0.675, 1)
                     StarMenu.destroy()
-                    self.OpenMenu()
+                    self.OpenMenu()  #update the menu
                 creatCard.frame.destroy()
+                base.accept('r', switch)
+                base.accept('q', self.hideMenu)
 
         else:
             creatCard.frame.destroy()
+            base.accept('q', self.hideMenu)
 
 
 #generate some widgets
@@ -436,16 +597,17 @@ class geneEntry(gui):
 
 
 class StarCard(gui):
-    def __init__(self, name, mas, rad, pos, vel, ty):
+    def __init__(self, name, mas, rad, pos, vel, ty, ture):
         self.name = name
         self.mas = mas
         self.rad = rad
         self.pos = pos
         self.vel = vel
         self.ty = ty
+        self.texture = ture
 
-    def Card(self, x):
-        global mycard
+    def Card(self, x):  #generate a card
+        global mycard, Cframe, velo, posi
         myname = self.name
         mypos = self.pos
         myvel = self.vel
@@ -491,177 +653,272 @@ class StarCard(gui):
                               scale=0.058,
                               fg=(0.96, 0.97, 1, 1))
         if ChArg[para] == -1:
-            self.Change(1, para, (0, 0, 0), (0, 0, 0))  #data update
-
-    def Change(self, x, y, v, p):
-        global velo, posi, Cframe, mycard, ChArg, ListS, StarMenu
-        ChArg[y] = -1
-        for j in range(len(MyStar[y + 1:])):
-            mycard[j + y + 1].destroy()
-            b = ChArg[:j + y + 1].count(-1)
-            MyStar[j + y + 1].Card(0.325 * b)
-            if ChArg[j + y + 1] == -1:
-                #TemStar_
-                MyStar[j + y + 1].Change(1, j + y + 1, (0, 0, 0),
-                                         (0, 0, 0))  #data update
-                break
-            else:
+            try:
+                mycard[para + 1].destroy()
+                b = ChArg[:para + 1].count(-1)
+                MyStar[para + 1].Card(0.325 * b)
+            except:
                 pass
-        Cframe[y] = DirectFrame(parent=mycard[y],
-                                frameTexture=mycard[y]['frameTexture'],
-                                frameSize=(0, 0.91, -0.32, 0),
-                                frameColor=(0.6 - y * 0.13, 0.7 - y * 0.08,
-                                            0.8 - y * 0.13, 1),
-                                relief=1)
-        Cframe[y].setPos(0.025, 0, -0.35)
+            Cframe[para] = DirectFrame(
+                parent=mycard[para],
+                frameTexture=mycard[para]['frameTexture'],
+                frameSize=(0, 0.91, -0.32, 0),
+                frameColor=(0.6 - para * 0.13, 0.7 - para * 0.08,
+                            0.8 - para * 0.13, 1),
+                relief=1)
+            Cframe[para].setPos(0.025, 0, -0.35)
 
-        velo[y], posi[y] = [1, 2, 3], [1, 2, 3]
-        vl, ps = ['\1roman\1vx\2', '\1roman\1vy\2', '\1roman\1vz\2'
-                  ], ['\1roman\1x\2', '\1roman\1y\2', '\1roman\1z\2']
-        for i in range(3):
-            velo[y][i] = DirectEntry(parent=Cframe[y],
-                                     initialText=str(v[i]),
-                                     scale=.035,
-                                     pos=(0.055 + i * 0.234, 0, -0.218),
-                                     relief=1,
-                                     width=5.2,
-                                     extraArgs=[y, 2, i])
-            vl[i] = OnscreenText(parent=velo[y][i],
-                                 text=vl[i],
-                                 scale=1.2,
-                                 pos=(-0.9, 0, 0),
-                                 fg=(0.5, 1, 0.9, 1))
-        V = OnscreenText(parent=velo[y][1],
-                         text='\1roman\1Velocity\2',
-                         scale=1.2,
-                         pos=(2.5, 1.7, 0),
-                         align=TextNode.ACenter,
-                         fg=(0.9, 0.85, 0.14, 1))
-        UnV = OnscreenText(parent=velo[y][2],
-                           text='\1roman\1\1blgr\1km/s\2\2',
-                           scale=1.2,
-                           pos=(6.7, 0, 0))
-        for j in range(3):
-            posi[y][2 - j] = DirectEntry(parent=Cframe[y],
-                                         initialText=str(p[2 - j]),
-                                         scale=.035,
-                                         pos=(0.055 + (2 - j) * 0.234, 0,
-                                              -0.11),
-                                         relief=1,
-                                         width=5.2,
-                                         extraArgs=[y, 1, j])
-            ps[2 - j] = OnscreenText(parent=posi[y][2 - j],
-                                     text=ps[2 - j],
+            velo[para], posi[para] = [1, 2, 3], [1, 2, 3]
+            vl, ps = ['\1roman\1vx\2', '\1roman\1vy\2', '\1roman\1vz\2'
+                      ], ['\1roman\1x\2', '\1roman\1y\2', '\1roman\1z\2']
+            for i in range(3):
+                velo[para][i] = DirectEntry(parent=Cframe[para],
+                                            initialText=str(
+                                                MyStar[para].vel[i]),
+                                            scale=.035,
+                                            pos=(0.055 + i * 0.234, 0, -0.218),
+                                            relief=1,
+                                            width=5.2)
+                vl[i] = OnscreenText(parent=velo[para][i],
+                                     text=vl[i],
                                      scale=1.2,
                                      pos=(-0.9, 0, 0),
                                      fg=(0.5, 1, 0.9, 1))
-        P = OnscreenText(parent=posi[y][1],
-                         text='\1roman\1Position\2',
-                         scale=1.2,
-                         pos=(2.5, 1.7, 0),
-                         align=TextNode.ACenter,
-                         fg=(0.9, 0.14, 0.85, 1))
-        UnP = OnscreenText(parent=posi[y][2],
-                           text='\1roman\1\1blgr\1km\2\2',
-                           scale=1.2,
-                           pos=(6.7, 0, 0))
-        myTr = YesNoCancelDialog(parent=Cframe[y],
-                                 relief=0,
-                                 scale=0.62,
-                                 button_relief=0,
-                                 buttonTextList=[
-                                     '\1blgr\1Close\2',
-                                     '\1blgr\1Change Args\2', '\1blgr\1Delet\2'
-                                 ],
-                                 button_scale=1.1,
-                                 pos=(0.5, 0, -0.186),
-                                 buttonValueList=[-1, 0, 1],
-                                 command=self.closeChange,
-                                 extraArgs=[y])
-        #ListS=List
-        #self.updating(y)
+            V = OnscreenText(parent=velo[para][1],
+                             text='\1roman\1Velocity\2',
+                             scale=1.2,
+                             pos=(2.5, 1.7, 0),
+                             align=TextNode.ACenter,
+                             fg=(0.9, 0.85, 0.14, 1))
+            UnV = OnscreenText(parent=velo[para][2],
+                               text='\1roman\1\1blgr\1km/s\2\2',
+                               scale=1.2,
+                               pos=(6.7, 0, 0))
+            for j in range(3):
+                posi[para][2 - j] = DirectEntry(
+                    parent=Cframe[para],
+                    initialText=str(MyStar[para].pos[2 - j]),
+                    scale=.035,
+                    pos=(0.055 + (2 - j) * 0.234, 0, -0.11),
+                    relief=1,
+                    width=5.2)
+                ps[2 - j] = OnscreenText(parent=posi[para][2 - j],
+                                         text=ps[2 - j],
+                                         scale=1.2,
+                                         pos=(-0.9, 0, 0),
+                                         fg=(0.5, 1, 0.9, 1))
+            P = OnscreenText(parent=posi[para][1],
+                             text='\1roman\1Position\2',
+                             scale=1.2,
+                             pos=(2.5, 1.7, 0),
+                             align=TextNode.ACenter,
+                             fg=(0.9, 0.14, 0.85, 1))
+            UnP = OnscreenText(parent=posi[para][2],
+                               text='\1roman\1\1blgr\1km\2\2',
+                               scale=1.2,
+                               pos=(6.7, 0, 0))
+            myTr = YesNoCancelDialog(parent=Cframe[para],
+                                     relief=0,
+                                     scale=0.62,
+                                     button_relief=0,
+                                     buttonTextList=[
+                                         '\1blgr\1Close\2',
+                                         '\1blgr\1Change Args\2',
+                                         '\1blgr\1Delet\2'
+                                     ],
+                                     button_scale=1.1,
+                                     pos=(0.5, 0, -0.186),
+                                     buttonValueList=[-1, 0, 1],
+                                     command=self.closeChange,
+                                     extraArgs=[para])
+        else:
+            if para < len(MyStar) - 1:
+                try:
+                    mycard[para + 1].destroy()
+                except:
+                    pass
+                b = ChArg[:para + 1].count(-1)
+                MyStar[para + 1].Card(0.325 * b)
 
-    def updating(self, y):
-        global velo, posi, TemStars, a
-        while ChArg[y] == -1:
-            a = 1
-            #TemStar=gui_data(y)
-            #
-            '''if 1==1:
+    def Change(self, x, y, v, p):  #inspect data
+        global velo, posi, Cframe, mycard, ChArg, ListS, StarMenu
+        if ChArg[y] == -1:
+            pass
+        else:
+            ChArg[y] = -1
+            try:
+                mycard[y + 1].destroy()
+                b = ChArg[:y + 1].count(-1)
+                MyStar[y + 1].Card(0.325 * b)
+            except:
+                pass
+            Cframe[y] = DirectFrame(parent=mycard[y],
+                                    frameTexture=mycard[y]['frameTexture'],
+                                    frameSize=(0, 0.91, -0.32, 0),
+                                    frameColor=(0.6 - y * 0.13, 0.7 - y * 0.08,
+                                                0.8 - y * 0.13, 1),
+                                    relief=1)
+            Cframe[y].setPos(0.025, 0, -0.35)
+
+            velo[y], posi[y] = [1, 2, 3], [1, 2, 3]
+            vl, ps = ['\1roman\1vx\2', '\1roman\1vy\2', '\1roman\1vz\2'
+                      ], ['\1roman\1x\2', '\1roman\1y\2', '\1roman\1z\2']
+            for i in range(3):
+                velo[y][i] = DirectEntry(parent=Cframe[y],
+                                         initialText=str(v[i]),
+                                         scale=.035,
+                                         pos=(0.055 + i * 0.234, 0, -0.218),
+                                         relief=1,
+                                         width=5.2,
+                                         extraArgs=[y, 2, i])
+                vl[i] = OnscreenText(parent=velo[y][i],
+                                     text=vl[i],
+                                     scale=1.2,
+                                     pos=(-0.9, 0, 0),
+                                     fg=(0.5, 1, 0.9, 1))
+            V = OnscreenText(parent=velo[y][1],
+                             text='\1roman\1Velocity\2',
+                             scale=1.2,
+                             pos=(2.5, 1.7, 0),
+                             align=TextNode.ACenter,
+                             fg=(0.9, 0.85, 0.14, 1))
+            UnV = OnscreenText(parent=velo[y][2],
+                               text='\1roman\1\1blgr\1km/s\2\2',
+                               scale=1.2,
+                               pos=(6.7, 0, 0))
+            for j in range(3):
+                posi[y][2 - j] = DirectEntry(parent=Cframe[y],
+                                             initialText=str(p[2 - j]),
+                                             scale=.035,
+                                             pos=(0.055 + (2 - j) * 0.234, 0,
+                                                  -0.11),
+                                             relief=1,
+                                             width=5.2,
+                                             extraArgs=[y, 1, j])
+                ps[2 - j] = OnscreenText(parent=posi[y][2 - j],
+                                         text=ps[2 - j],
+                                         scale=1.2,
+                                         pos=(-0.9, 0, 0),
+                                         fg=(0.5, 1, 0.9, 1))
+            P = OnscreenText(parent=posi[y][1],
+                             text='\1roman\1Position\2',
+                             scale=1.2,
+                             pos=(2.5, 1.7, 0),
+                             align=TextNode.ACenter,
+                             fg=(0.9, 0.14, 0.85, 1))
+            UnP = OnscreenText(parent=posi[y][2],
+                               text='\1roman\1\1blgr\1km\2\2',
+                               scale=1.2,
+                               pos=(6.7, 0, 0))
+            myTr = YesNoCancelDialog(parent=Cframe[y],
+                                     relief=0,
+                                     scale=0.62,
+                                     button_relief=0,
+                                     buttonTextList=[
+                                         '\1blgr\1Close\2',
+                                         '\1blgr\1Change Args\2',
+                                         '\1blgr\1Delet\2'
+                                     ],
+                                     button_scale=1.1,
+                                     pos=(0.5, 0, -0.186),
+                                     buttonValueList=[-1, 0, 1],
+                                     command=self.closeChange,
+                                     extraArgs=[y])
+            base.ignore('r')
+
+    def updating(self, task):
+        global velo, posi, MyStar
+        Data, objs = self.getData()
+        if objs == ListS:
+            pass
+        else:
+            l = 0
+            while l < len(ListS):
+                if objs[l] == ListS[l]:
+                    l += 1
+                else:
+                    del ListS[l]
+                    del StarCopy[y]
+                    del ChArg[y]
+
+                    MyStar[y].destroy()
+                    del MyStar[y]
+                    mycard[y].destroy()
+                    del mycard[y]
+                    self.Review(y - 1)
+            for y in range(len(objs)):
+                if objs[y] in ListS:
+                    pass
+                else:
+                    ListS.append(objs[y])
+                    starS = StarCard('Hapy', objs[y].mass, objs[y].radius,
+                                     Data[objs[y].ID][4:7],
+                                     Data[objs[y].ID][1:4],
+                                     Type.index(objs[y].objtype),
+                                     objs[y].texture)
+                    MyStar.append(starS)
+                    StarCopy.append(starS.name)
+                    Cframe.append(1)
+                    ChArg.append(0)
+                    velo.append(1)
+                    posi.append(1)
+                    star.Card(0)
+
+        for y in range(len(ChArg)):
+            if ChArg[y] == -1:
+                MyStar[y].vel = Data[y][1:4]
+                MyStar[y].pos = Data[y][4:7]
                 for i in range(3):
-                    posi[y][i].enterText('{:' '>8}'.format(int(TemStar[i]))+'{:.3f}'.format(TemStar[i]-int(TemStar[i])))
-                    velo[y][i].enterText('{:' '>8}'.format(int(TemStar[i+3]))+'{:.3f}'.format(TemStar[i+3]-int(TemStar[i+3])))
-            else:
-                NewStar=List
-                NewData=DataList
-                l=0
-                while l<len(ListS):
-                    if NewList[l]==ListS[l]:
-                        l+=1
-                    else:
-                        del ListS[l]
-                        del StarCopy[y]
-                        del ChArg[y]
-                        
-                        MyStar[y].destroy()
-                        mycard[y].destroy()
-                        self.Review(y-1)
-                for star in NewList:
-                    if star in ListS:
-                        pass
-                    else:
-                        ListS.append(star)
-                        starS=StarCard(DataList)
-                        MyStar.append(starS)
-                        StarCopy.append(starS.name)
-                        Cframe.append(1)
-                        ChArg.append(0)
-                        star.Card(0)'''
-    def closeChange(self, x, y):
+                    posi[y][i].enterText(
+                        '{:'
+                        '>8}'.format(int(MyStar[y].pos[i])) +
+                        '{:.3f}'.format(MyStar[y].pos[i] -
+                                        int(MyStar[y].pos[i])))
+                    velo[y][i].enterText(
+                        '{:'
+                        '>8}'.format(int(MyStar[y].vel[i])) +
+                        '{:.3f}'.format(MyStar[y].vel[i] -
+                                        int(MyStar[y].vel[i])))
+        return task.again
+
+    def closeChange(self, x, y):  #close Cframe and do what the user like
         global ChArg, MyStar, StarCopy, size
         if x == -1:
             Cframe[y].destroy()
             ChArg[y] = 0
             self.Review(y)
         elif x == 1:
+            global world
+            world.end()
             del StarCopy[y]
             del ChArg[y]
 
             del MyStar[y]
             mycard[y].destroy()
             del mycard[y]
-            size = (0, 0.996, Length[2] + 1, 1)
             self.Review(y - 1)
-            #Mem.reinitialize()
+            reinitialize()
             #star been delet
-            '''for star in MyStar:
-                        creatobject(star.type,
-                                     star.Im,
-                                     myname=star.name,
-                                     mass=star.mas,
-                                     radius=star.rad,
-                                     vel=star.vel,
-                                     cor=star.pos)'''
+            for star in MyStar:
+                createobject(star.ty,
+                             star.texture,
+                             myname=star.name,
+                             mass=star.mas,
+                             radius=star.rad,
+                             vel=star.vel,
+                             cor=star.pos)
+            world.start()
 
         else:
             self.creat(1, MyStar[y].ty, n=1, y=y)
 
+        base.accept('r', switch)
+
     def Review(self, y, n=0):
         global mycard
-        for i in range(len(MyStar[y + 1:])):
-            mycard[i + y + 1].destroy()
-            b = ChArg[:i + y + 1].count(-1)
-            MyStar[i + y + 1].Card(0.325 * b)
-            if ChArg[i + y + 1] == -1:
-                #TemStar_
-                self.Change(1, i + y, (0, 0, 0), (0, 0, 0))  #data update
-            else:
-                pass
-
-
-def gui_data(y):
-    if switch:
-        [i, j, k], [vi, vj, vk] = List[y].cor, List[y].vel
-        return [i, j, k, vi, vj, vk]
-    else:
-        return None
+        try:
+            mycard[y + 1].destroy()
+            b = ChArg[:y + 1].count(-1)
+            MyStar[y + 1].Card(0.325 * b)
+        except:
+            pass

@@ -129,8 +129,10 @@ def stepjudge():
                 vells = [mvells[0] / m, mvells[1] / m, mvells[2] / m]
                 corls = [mcorls[0] / m, mcorls[1] / m, mcorls[2] / m]
                 temptype = None
-                if "star" in temptypeset:
-                    temptype = "star"
+                if "starO" in temptypeset:
+                    temptype = "starO"
+                elif "starG" in temptypeset:
+                    temptype = "starG"
                 elif "Jplanet" in temptypeset:
                     temptype = "Jplanet"
                 elif "Eplanet" in temptypeset:
@@ -183,4 +185,4 @@ def loopjudge(length=120):
 
 
 def selectTexture(starType):
-    return 'res/tmp/earth/earth.egg'
+    return "res/card/a1.jpg"
