@@ -7,3 +7,6 @@ __pycache__
 test*.py
 drop
 html
+build
+dist
+Tips

@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-16 08:22:23
-@LastEditTime : 2019-12-22 19:51:24
+@LastEditTime : 2019-12-23 00:06:48
 '''
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
@@ -113,20 +113,23 @@ class gui(ShowBase):
                 tp.setProperties(name, tpG)
 
         path = 'res/card/'
-        purp, gray, pink, blgr, light, green, blue, blood, erro, cutoff, Roman = prop(
-        ), prop(), prop(), prop(), prop(), prop(), prop(), prop(), prop(
-        ), prop(), prop()
-        purp.fg('purp', 0.8, 0.57, 0.95, 3.4)
-        gray.fg('gray', 0.76, 0.75, 0.77, 1)
-        pink.fg('pink', 0.86, 0.25, 0.6, 1)
-        light.fg('light', 0.8, 1, 0.5, 2)
-        blgr.fg('blgr', 0.5, 1, 0.9, 1.4)
-        green.fg('green', 0, 0.4, 1, 1.5)
-        blue.fg('blue', 0.3, 0.5, 0.8, 1)
-        blood.fg('blood', 0.83, 0.39, 0.44, 2)
-        erro.fg('red', 1, 0.2, 0, 2)
-        cutoff.fg('white', 1, 1, 1, 1)
-        Roman.font('cmtt12', 'roman')
+        try:
+            purp, gray, pink, blgr, light, green, blue, blood, erro, cutoff, Roman = prop(
+            ), prop(), prop(), prop(), prop(), prop(), prop(), prop(), prop(
+            ), prop(), prop()
+            purp.fg('purp', 0.8, 0.57, 0.95, 3.4)
+            gray.fg('gray', 0.76, 0.75, 0.77, 1)
+            pink.fg('pink', 0.86, 0.25, 0.6, 1)
+            light.fg('light', 0.8, 1, 0.5, 2)
+            blgr.fg('blgr', 0.5, 1, 0.9, 1.4)
+            green.fg('green', 0, 0.4, 1, 1.5)
+            blue.fg('blue', 0.3, 0.5, 0.8, 1)
+            blood.fg('blood', 0.83, 0.39, 0.44, 2)
+            erro.fg('red', 1, 0.2, 0, 2)
+            cutoff.fg('white', 1, 1, 1, 1)
+            Roman.font('cmtt12', 'roman')
+        except:
+            pass
         star1,star2,e_planet,g_planet=loader.loadTexture( path+'11411.jpg'),\
                                 loader.loadTexture(path+'11511.jpg'),\
                                 loader.loadTexture(path+'11211.jpg'),\
