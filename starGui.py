@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-25 10:03:35
-@LastEditTime : 2019-12-26 05:02:44
+@LastEditTime : 2019-12-26 05:18:51
 '''
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
@@ -27,6 +27,11 @@ class Menu:
         self.changeButtonSW = True
 
     def init(self):
+        ''' 
+        菜单对象的初始化，包括：  
+        1. 创建右上角菜单  
+        2. 创建上方状态栏  
+        '''
         self.errorWarnings = {}
         size = (0, 0.99, -1.3, 1)
         self.StarMenu = DirectScrolledFrame(relief=0,
@@ -68,6 +73,9 @@ class Menu:
         self.changeButtonSwitch()
 
     def changeButtonSwitch(self):
+        '''
+        changeButton 状态控制
+        '''
         if self.changeButtonSW is True:
             self.Ch_button = DirectButton(parent=self.StarMenu,
                                           relief=1,
@@ -86,6 +94,9 @@ class Menu:
                                           command=self.changeButtonHandler)
 
     def changeButtonHandler(self):
+        '''
+        changeButton的事件响应
+        '''
         if self.changeButtonSW is True:
             global World
             global WorldSwitch
@@ -103,6 +114,9 @@ class Menu:
             self.changeButtonSW = True
 
     def open(self):
+        '''
+        打开菜单
+        '''
         global World
         World.takeMouseAway()
         self.StarMenu.show()
@@ -110,17 +124,26 @@ class Menu:
         StarCards.init()
 
     def hide(self):
+        '''
+        隐藏菜单
+        '''
         global World
         World.takeMouseBack()
         self.StarMenu.hide()
 
     def changeTimeRate(self):
+        '''
+        时间比例更改
+        '''
         rateGot = self.timeRateBar['value']
         rateGot = 1 / (2**(int(rateGot / 8)))
         global World
         World.changeTimeRate(rateGot)
 
     def generateFixedCards(self):
+        '''
+        生成左上角固定卡片
+        '''
         self.typeCard = {}
         self.typeframe = {}
         self.starImgs = {}
@@ -157,6 +180,9 @@ class Menu:
                 extraArgs=[objTypes[i], True])
 
     def generateLine(self):
+        '''
+        生成右侧中间的分割线
+        '''
         self.divideLineframe = DirectFrame(parent=self.StarMenucanvas,
                                            frameSize=(0, 0.965, -0.02, 0),
                                            pos=(0, 0, -0.073),
@@ -168,6 +194,9 @@ class Menu:
                                        pos=(0.47, -0.011, 0))
 
     def generateDetailCard(self, choice, objtype, newStar, star=None):
+        '''
+        生成左侧细节卡片
+        '''
         global KeyReg
         KeyReg.unregkeys()
         global Tipmgr
@@ -279,11 +308,17 @@ class Menu:
             'frameTexture']
 
     def detailedCardVariousTexture(self, choice):
+        '''
+        召唤贴图选择框
+        '''
         root = tk.Tk()
         root.withdraw()
         self.Filepath = filedialog.askopenfilename()
 
     def detailedCardHandler(self, button, objtype, newStar, star=None):
+        '''
+        左侧细节菜单响应事件
+        '''
         for i in self.errorWarnings:
             self.errorWarnings[i].destroy()
         legitimate = True
@@ -353,6 +388,9 @@ class starCards:
         self.Cards = {}
 
     def init(self):
+        '''
+        生成右侧动态卡片
+        '''
         for i in self.Cards:
             self.Cards[i].destroy()
         self.Cards = {}
@@ -362,6 +400,9 @@ class starCards:
         self.generateCard()
 
     def selectRandomTexture(self, objtype):
+        '''
+        右侧卡片选择随机贴图
+        '''
         if objtype == 'starO':
             return self.selectRandomFile(getPath() + '/res/card/starO/')
         elif objtype == 'starG':
@@ -372,6 +413,9 @@ class starCards:
             return self.selectRandomFile(getPath() + '/res/card/Eplanet/')
 
     def selectRandomFile(self, fileDir):
+        '''
+        选择随机文件
+        '''
         pt = Filename(fileDir).toOsSpecific()
         pathDir = os.listdir(pt)
         selectedPic = random.sample(pathDir, 1)
@@ -380,6 +424,9 @@ class starCards:
         return fileselected
 
     def generateCard(self):
+        '''
+        生成右下角卡片
+        '''
         for obj in self.objs:
             info = '\1roman\1mass: %d   kg\nradius: %d   km\2' % (obj.mass,
                                                                   obj.radius)
@@ -528,6 +575,9 @@ class starCards:
                 pass
 
     def openDetailCard(self, choice, obj):
+        '''
+        打开卡片详情
+        '''
         obj.switch = True
         global MenuIns
         MenuIns.StarMenu.destroy()
@@ -535,6 +585,9 @@ class starCards:
         MenuIns.open()
 
     def closeDetailCard(self, choice, obj):
+        '''
+        关闭卡片详情，事件处理
+        '''
         if choice == -1:
             obj.switch = False
             global MenuIns
@@ -553,11 +606,17 @@ class starCards:
 
 
 def update():
+    '''
+    更新数据
+    '''
     global StarCards
     StarCards.init()
 
 
 class worldSwitch:
+    '''
+    世界运行开关
+    '''
     def __init__(self):
         global World
         self.switchStatus = 1
@@ -585,12 +644,17 @@ class worldSwitch:
 
 
 def changeStarttingStatusout():
+    '''
+    开关通讯函数
+    '''
     global WorldSwitch
     WorldSwitch.changeStarttingStatus()
-    # TODO callback
 
 
 class guiRenderReg:
+    '''
+    渲染2D样式
+    '''
     def __init__(self):
         self.tp = TextPropertiesManager.getGlobalPtr()
         self.setWordStyle()
@@ -626,13 +690,16 @@ class guiRenderReg:
 
 def getPath():
     '''
-        绝对路径获取  
-        '''
+    绝对路径获取  
+    '''
     path = os.path.abspath(sys.path[0])
     return Filename.fromOsSpecific(path).getFullpath()
 
 
 class menuSwitch:
+    '''
+    菜单开关辅助类
+    '''
     def __init__(self):
         self.trigger = True
 
@@ -649,6 +716,9 @@ class menuSwitch:
 
 
 class keyRegMgr:
+    '''
+    按键注册类
+    '''
     def __init__(self):
         global WorldSwitch, MenuSwitch
         WorldSwitch = worldSwitch()
@@ -667,6 +737,9 @@ class keyRegMgr:
 
 
 class TipMgr:
+    '''
+    提示管理器
+    '''
     def __init__(self):
         self.statusDict = {}
         self.readcsv()
@@ -758,6 +831,9 @@ class TipMgr:
 
 
 class gui(ShowBase):
+    '''
+    2DGUI基类
+    '''
     def __init__(self):
         self.setup()
         guiRenderReg()
@@ -789,7 +865,6 @@ class gui(ShowBase):
         )
 
     def setup(self):
-
         loadPrcFileData('', 'fullscreen false')
         wp = WindowProperties()
         wp.setSize(1920, 1080)
