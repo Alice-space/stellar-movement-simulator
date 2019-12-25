@@ -1,4 +1,5 @@
 import time
+import copy
 
 from collections import deque
 
@@ -280,18 +281,18 @@ le. (A trivial function) '''
     
     while calculatestate == True:
         time.sleep(1)
-    global lennum, t0, totalorder, triggerstate
+    global lennum, t0, totalorder, triggerstate,objects
     lennum, t0, totalorder, triggerstate = 0, 0, 0, False
+    tmp = []
     for obj in objects:
         if obj.readstate == True:
             obj.writestate = True
             obj.order = 0
             obj.switch = None
             obj.temptime = 0
-            obj.objdata = deque([0] + obj.vel + obj.cor)
-            objects.append(obj)
-        else:
-            objects.remove(obj)
+            obj.objdata = deque([[0] + obj.vel + obj.cor])
+            tmp.append(obj)
+    objects = copy.deepcopy(tmp)
     return None
 
 def processcreate(objtype, texture, myname = "Default", ls = [], order = 0,
@@ -311,14 +312,13 @@ ly be called by the GUI module. (A trivial function) '''
     objects.append(obj)
     return None
 
-def processdelete(objls):
+def processdelete(obj):
 
     ''' This function deletes stellar objects in the process of the program. On
 ly be called by the GUI module. (A trivial function) '''
     
 
-    for obj in objls:
-        objects.remove(obj)
+    objects.remove(obj)
     return None
 
 def returnnum():

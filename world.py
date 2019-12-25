@@ -4,7 +4,7 @@
 
 @Author: Alicespace  
 @Date: 2019-11-18 08:06:30  
-@LastEditTime : 2019-12-26 02:09:52
+@LastEditTime : 2019-12-26 04:50:12
 
 '''
 
@@ -173,9 +173,10 @@ class world(ShowBase):
         """
         global isEnded
         if isEnded:
-            if self.startTask:
-                pass
-            else:
+            try:
+                if self.startTask:
+                    pass
+            except:
                 self.startTask = base.taskMgr.doMethodLater(
                     0.1, self.start, 'start')
         else:
@@ -396,6 +397,7 @@ class world(ShowBase):
         if isEnded:
             isEnded = False
             self.calculateStarTask.remove()
+            starGui.changeStarttingStatusout()
             return task.done
         else:
             if Mem.triggerstate is True:

@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-25 10:03:35
-@LastEditTime : 2019-12-26 03:02:30
+@LastEditTime : 2019-12-26 05:02:44
 '''
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
@@ -68,24 +68,21 @@ class Menu:
         self.changeButtonSwitch()
 
     def changeButtonSwitch(self):
-        path0 = getPath() + '/res/texture/gui-texture/'
         if self.changeButtonSW is True:
-            self.Ch_button = DirectButton(parent=self.StarMenucanvas,
-                                          frameTexture=path0 + 'timr.jpg',
-                                          relief=2,
-                                          scale=0.07,
-                                          pos=(-0.25, 0, -0.85),
-                                          text='\1light\1Change\2',
-                                          text_scale=0.06,
+            self.Ch_button = DirectButton(parent=self.StarMenu,
+                                          relief=1,
+                                          scale=0.252,
+                                          pos=(-0.3, 0, -0.9),
+                                          text='Change',
+                                          text_scale=0.25,
                                           command=self.changeButtonHandler)
         else:
-            self.Ch_button = DirectButton(parent=self.StarMenucanvas,
-                                          frameTexture=path0 + 'timl.jpg',
-                                          relief=2,
-                                          scale=0.07,
-                                          pos=(0, 0, -0.85),
-                                          text='\1light\1Done\2',
-                                          text_scale=0.06,
+            self.Ch_button = DirectButton(parent=self.StarMenu,
+                                          relief=1,
+                                          scale=0.252,
+                                          pos=(-0.3, 0, -0.9),
+                                          text='Done',
+                                          text_scale=0.25,
                                           command=self.changeButtonHandler)
 
     def changeButtonHandler(self):
@@ -94,14 +91,15 @@ class Menu:
             global WorldSwitch
             World.end()
             WorldSwitch.switchStatus = 1
-            WorldSwitch.switch()
             update()
             self.StarMenu.destroy()
             self.init()
+            self.open()
             self.changeButtonSW = False
         else:
             self.StarMenu.destroy()
             self.init()
+            self.open()
             self.changeButtonSW = True
 
     def open(self):
@@ -118,7 +116,7 @@ class Menu:
 
     def changeTimeRate(self):
         rateGot = self.timeRateBar['value']
-        # TODO some calculate
+        rateGot = 1 / (2**(int(rateGot / 8)))
         global World
         World.changeTimeRate(rateGot)
 
@@ -184,71 +182,72 @@ class Menu:
                 pass
         except:
             self.Filepath = None
-        if newStar:
-            self.detailCardFrame = DirectFrame(parent=self.StarMenu,
-                                               relief=1,
-                                               frameSize=(0, 0.8, -1, 1),
-                                               frameColor=(0.7, 0.7, 0.2, 1),
-                                               pos=(-2.58, 0, 0))
-            path = getPath() + '/res/card/detailCard/' + objtype + '.jpg'
-            self.detailCardFrame['frameTexture'] = path
-            entries_title = [
-                'Name', 'mass\t\t   kg', 'radius\t\t   km', 'x\t\t\tkm',
-                'y\t\t\tkm', 'z\t\t\tkm', 'V_x\t\t\tkm/s', 'V_y\t\t\tkm/s',
-                'V_z\t\t\tkm/s'
-            ]
-            self.entryList, self.textList = [], []
+        self.detailCardFrame = DirectFrame(parent=self.StarMenu,
+                                           relief=1,
+                                           frameSize=(0, 0.8, -1, 1),
+                                           frameColor=(0.7, 0.7, 0.2, 1),
+                                           pos=(-2.58, 0, 0))
+        path = getPath() + '/res/card/detailCard/' + objtype + '.jpg'
+        self.detailCardFrame['frameTexture'] = path
+        entries_title = [
+            'Name', 'mass\t\t   kg', 'radius\t\t   km', 'x\t\t\tkm',
+            'y\t\t\tkm', 'z\t\t\tkm', 'V_x\t\t\tkm/s', 'V_y\t\t\tkm/s',
+            'V_z\t\t\tkm/s'
+        ]
+        self.entryList, self.textList = [], []
 
-            def Name(num):
-                t = DirectEntry(parent=self.detailCardFrame,
-                                scale=0.063,
-                                width=8,
-                                relief=1,
-                                pos=(0.1, 0, 0.8))
-                self.entryList.append(t)
-                t = OnscreenText(parent=self.entryList[num],
-                                 text=entries_title[num],
-                                 scale=0.7,
-                                 pos=(1.5, 1.5, 0),
-                                 fg=(0.5, 1, 0.9, 1))
-                self.textList.append(t)
+        def Name(num):
+            t = DirectEntry(parent=self.detailCardFrame,
+                            scale=0.063,
+                            width=8,
+                            relief=1,
+                            pos=(0.1, 0, 0.8))
+            self.entryList.append(t)
+            t = OnscreenText(parent=self.entryList[num],
+                             text=entries_title[num],
+                             scale=0.7,
+                             pos=(1.5, 1.5, 0),
+                             fg=(0.5, 1, 0.9, 1))
+            self.textList.append(t)
 
-            def MassandRadius(num):
-                t = DirectEntry(parent=self.detailCardFrame,
-                                scale=0.06,
-                                width=5,
-                                relief=1,
-                                pos=(0.17, 0, 0.7 - 0.17 * num))
-                self.entryList.append(t)
-                t = OnscreenText(parent=self.entryList[num],
-                                 text=entries_title[num],
-                                 scale=0.7,
-                                 pos=(2, 0, 0),
-                                 fg=(0.5, 1, 0.9, 1))
-                self.textList.append(t)
+        def MassandRadius(num):
+            t = DirectEntry(parent=self.detailCardFrame,
+                            scale=0.06,
+                            width=5,
+                            relief=1,
+                            pos=(0.17, 0, 0.7 - 0.17 * num))
+            self.entryList.append(t)
+            t = OnscreenText(parent=self.entryList[num],
+                             text=entries_title[num],
+                             scale=0.7,
+                             pos=(2, 0, 0),
+                             fg=(0.5, 1, 0.9, 1))
+            self.textList.append(t)
 
-            def CorandVel(num):
-                t = DirectEntry(parent=self.detailCardFrame,
-                                scale=0.06,
-                                width=7,
-                                relief=1,
-                                pos=(0.17, 0, 0.7 - 0.17 * num))
-                self.entryList.append(t)
-                t = OnscreenText(parent=self.entryList[num],
-                                 text=entries_title[num],
-                                 scale=0.7,
-                                 pos=(3.6, 0, 0),
-                                 fg=(0.5, 1, 0.9, 1))
-                self.textList.append(t)
+        def CorandVel(num):
+            t = DirectEntry(parent=self.detailCardFrame,
+                            scale=0.06,
+                            width=7,
+                            relief=1,
+                            pos=(0.17, 0, 0.7 - 0.17 * num))
+            self.entryList.append(t)
+            t = OnscreenText(parent=self.entryList[num],
+                             text=entries_title[num],
+                             scale=0.7,
+                             pos=(3.6, 0, 0),
+                             fg=(0.5, 1, 0.9, 1))
+            self.textList.append(t)
 
-            for num in range(9):
-                if num == 0:
-                    Name(num)
+        for num in range(9):
+            if num == 0:
+                Name(num)
+            else:
+                if num < 3:
+                    MassandRadius(num)
                 else:
-                    if num < 3:
-                        MassandRadius(num)
-                    else:
-                        CorandVel(num)
+                    CorandVel(num)
+        if newStar:
+            pass
         else:
             dataS = [
                 star.name, star.mass, star.radius, star.cor[0], star.cor[1],
@@ -322,7 +321,7 @@ class Menu:
                     star.texture = dataS + [self.Filepath]
                 else:
                     if dataS[0] is None:
-                        dataS[0] = 'Default Object'
+                        dataS[0] = '\1white\1Default Object\2'
                     else:
                         pass
                     processcreate(objtype=objtype,
@@ -400,9 +399,9 @@ class starCards:
                 lastobj = obj
             else:
                 if lastobj.switch is False:
-                    delta = -0.365
-                else:
                     delta = -0.690
+                else:
+                    delta = -0.365
                 card = DirectFrame(
                     pos=(0, 0, delta),
                     parent=self.Cards[lastobj.ID],
@@ -460,7 +459,7 @@ class starCards:
                     vl[i] = OnscreenText(parent=velo[i],
                                          text=vl[i],
                                          scale=1.2,
-                                         pos=(-0.85, 0, 0),
+                                         pos=(-0.7, 0, 0),
                                          fg=(0.5, 1, 0.9, 1))
                 V = OnscreenText(parent=velo[1],
                                  text='\1roman\1Velocity\2',
@@ -531,6 +530,7 @@ class starCards:
     def openDetailCard(self, choice, obj):
         obj.switch = True
         global MenuIns
+        MenuIns.StarMenu.destroy()
         MenuIns.init()
         MenuIns.open()
 
@@ -538,14 +538,16 @@ class starCards:
         if choice == -1:
             obj.switch = False
             global MenuIns
+            MenuIns.StarMenu.destroy()
             MenuIns.init()
             MenuIns.open()
         elif choice == 0:
             MenuIns.generateDetailCard(0, obj.objtype, False, star=obj)
         else:
-            reinitialize()
             processdelete(obj)
+            reinitialize()
             self.objs = getcurrentobjects()
+            MenuIns.StarMenu.destroy()
             MenuIns.init()
             MenuIns.open()
 
@@ -553,21 +555,6 @@ class starCards:
 def update():
     global StarCards
     StarCards.init()
-    '''global velo, posi
-    if not triggerstate:
-        for y in range(len(MyStar)):
-            if MyStar[y].switch == -1:
-                for i in range(3):
-                    posi[y][i].enterText('{:' '>8}'.format(int(MyStar[y].cor[i])) +\
-                         '{:.3f}'.format(MyStar[y].cor[i] -int(MyStar[y].cor[i])))
-                    velo[y][i].enterText('{:' '>8}'.format(int(MyStar[y].vel[i])) +\
-                         '{:.3f}'.format(MyStar[y].vel[i] -int(MyStar[y].vel[i])))
-            else:
-                pass
-    else:
-        MyStar = Mem.getcurrentobjects()
-        CloseMenu()
-        OpenMenu()'''
 
 
 class worldSwitch:
@@ -578,406 +565,121 @@ class worldSwitch:
     def switch(self):
         global statusText
         if self.switchStatus == 1:
-            t_k = '\1white\1The world is \2\1red\1running\2'
-            base.taskMgr.add(World.start, 'start')
-            self.switchStatus = 2
-        elif self.switchStatus == -1:
-            t_k = '\1white\1The world is \2\1red\1not running\2'
-            World.end()
-            self.switchStatus = -2
-        statusText['text'] = t_k
-
-    def changeStarttingStatus(self):
-        if self.switchStatus == 2:
-            self.switchStatus = -1
-        elif self.switchStatus == -2:
-            self.switchStatus = 1
-
-
-def changeStarttingStatusout():
-    global WorldSwitch
-    WorldSwitch.changeStarttingStatus()
-    # TODO callback
-
-
-class guiRenderReg:
-    def __init__(self):
-        self.tp = TextPropertiesManager.getGlobalPtr()
-        self.setWordStyle()
-
-    def setWordStyle(self):
-        try:
-            self.fg('purp', 0.8, 0.57, 0.95, 3.4)
-            self.fg('gray', 0.76, 0.75, 0.77, 1)
-            self.fg('pink', 0.86, 0.25, 0.6, 1)
-            self.fg('light', 0.8, 1, 0.5, 2)
-            self.fg('blgr', 0.5, 1, 0.9, 1.4)
-            self.fg('green', 0, 0.4, 1, 1.5)
-            self.fg('blue', 0.3, 0.5, 0.65, 1)
-            self.fg('blood', 0.83, 0.39, 0.44, 2)
-            self.fg('red', 1, 0.2, 0, 2)
-            self.fg('white', 1, 1, 1, 1)
-            self.setfont('cmtt12', 'roman')
-            # TODO no such font
-        except:
-            pass
-
-    def setfont(self, filepath, name):
-        self.font = base.loader.loadFont(filepath)
-        tpF = TextProperties()
-        tpF.setFont(self.font)
-        self.tp.setProperties(name, tpF)
-
-    def fg(self, name, r, g, b, a):
-        tpG = TextProperties()
-        tpG.setTextColor(r, g, b, a)
-        self.tp.setProperties(name, tpG)
-
-
-def getPath():
-    '''
-        绝对路径获取  
-        '''
-    path = os.path.abspath(sys.path[0])
-    return Filename.fromOsSpecific(path).getFullpath()
-
-
-class menuSwitch:
-    def __init__(self):
-        self.trigger = True
-
-    def switch(self):
-        global MenuIns,statusText
-        if self.trigger is False:
-            self.trigger = True
-            MenuIns.open()
-            statusText.show()
-        elif self.trigger is True:
-            self.trigger = False
-            MenuIns.hide()
-            statusText.hide()
-
-
-class keyRegMgr:
-    def __init__(self):
-        global WorldSwitch, MenuSwitch
-        WorldSwitch = worldSwitch()
-        MenuSwitch = menuSwitch()
-        base.accept('r', WorldSwitch.switch)
-        base.accept('q', MenuSwitch.switch)
-        base.accept('control-e', sys.exit)
-
-    def regKey(self):
-        base.accept('r', WorldSwitch.switch)
-        base.accept('q', MenuSwitch.switch)
-
-    def unregkeys(self):
-        base.ignore('q')
-        base.ignore('r')
-
-
-class TipMgr:
-    def __init__(self):
-        self.statusDict = {}
-        self.readcsv()
-
-    def readcsv(self):
-        csvPath = Filename(getPath() + '/res/config/Tips').toOsSpecific()
-        if os.path.exists(csvPath):
-            with open(csvPath, 'r') as tips:
-                line = tips.readline()
-                self.statusDict = eval(line)
-        else:
-            self.writecsv('NoTip', '0')
-            self.writecsv('NoVtip', '0')
-                                 align=TextNode.ACenter,
-                                 fg=(0.9, 0.85, 0.14, 1))
-                UnV = OnscreenText(parent=velo[2],
-                                   text='\1roman\1\1blgr\1km/s\2\2',
-                                   scale=1.2,
-                                   pos=(6.7, 0, 0))
-                for j in range(3):
-                    posi[2 - j] = DirectEntry(
-                        parent=infoCard,
-                        initialText='{:'
-                        '>8}'.format(int(p[i])) +
-                        '{:.3f}'.format(p[i] - int(p[i]))[1:],
-                        scale=.035,
-                        pos=(0.055 + (2 - j) * 0.234, 0, -0.11),
-                        relief=1,
-                        width=5.2,
-                    )
-                    ps[2 - j] = OnscreenText(parent=posi[2 - j],
-                                             text=ps[2 - j],
-                                             scale=1.2,
-                                             pos=(-0.9, 0, 0),
-                                             fg=(0.5, 1, 0.9, 1))
-                P = OnscreenText(parent=posi[1],
-                                 text='\1roman\1Position\2',
-                                 scale=1.2,
-                                 pos=(2.5, 1.7, 0),
-                                 align=TextNode.ACenter,
-                                 fg=(0.9, 0.14, 0.85, 1))
-                UnP = OnscreenText(parent=posi[2],
-                                   text='\1roman\1\1blgr\1km\2\2',
-                                   scale=1.2,
-                                   pos=(6.7, 0, 0))
-                global MenuIns
-                if MenuIns.changeButtonSW is False:
-                    myTr = YesNoCancelDialog(parent=infoCard,
-                                             relief=0,
-                                             scale=0.62,
-                                             button_relief=0,
-                                             buttonTextList=[
-                                                 '\1blgr\1Close\2',
-                                                 '\1blgr\1Change Args\2',
-                                                 '\1blgr\1Delete\2'
-                                             ],
-                                             button_scale=1.1,
-                                             pos=(0.5, 0, -0.186),
-                                             buttonValueList=[-1, 0, 1],
-                                             command=self.closeDetailCard,
-                                             extraArgs=[obj])
-                else:
-                    myTr = OkDialog(parent=infoCard,
-                                    relief=0,
-                                    scale=0.62,
-                                    button_relief=0,
-                                    buttonTextList=['\1blgr\1Close\2'],
-                                    buttonValueList=[-1],
-                                    button_scale=1.1,
-                                    pos=(0.67, 0, -0.186),
-                                    command=self.closeDetailCard,
-                                    extraArgs=[obj])
-            else:
-                pass
-
-    def openDetailCard(self, choice, obj):
-        obj.switch = True
-        global MenuIns
-        MenuIns.init()
-        MenuIns.open()
-
-    def closeDetailCard(self, choice, obj):
-        if choice == -1:
-            obj.switch = False
-            global MenuIns
-            MenuIns.init()
-            MenuIns.open()
-        elif choice == 0:
-            MenuIns.generateDetailCard(0, obj.objtype, False, star=obj)
-        else:
-            reinitialize()
-            processdelete(obj)
-            self.objs = getcurrentobjects()
-            MenuIns.init()
-            MenuIns.open()
-
-
-def update():
-    global StarCards
-    StarCards.init()
-    '''global velo, posi
-    if not triggerstate:
-        for y in range(len(MyStar)):
-            if MyStar[y].switch == -1:
-                for i in range(3):
-                    posi[y][i].enterText('{:' '>8}'.format(int(MyStar[y].cor[i])) +\
-                         '{:.3f}'.format(MyStar[y].cor[i] -int(MyStar[y].cor[i])))
-                    velo[y][i].enterText('{:' '>8}'.format(int(MyStar[y].vel[i])) +\
-                         '{:.3f}'.format(MyStar[y].vel[i] -int(MyStar[y].vel[i])))
-            else:
-                pass
-    else:
-        MyStar = Mem.getcurrentobjects()
-        CloseMenu()
-        OpenMenu()'''
-
-
-class worldSwitch:
-    def __init__(self):
-        global World
-        self.switchStatus = 1
-
-    def switch(self):
-        global statusText
-        if self.switchStatus == 1:
-            t_k = '\1white\1The world is \2\1red\1running\2'
-            base.taskMgr.add(World.start, 'start')
-            self.switchStatus = 2
-        elif self.switchStatus == -1:
-            t_k = '\1white\1The world is \2\1red\1not running\2'
-            World.end()
-            self.switchStatus = -2
-        statusText['text'] = t_k
-
-    def changeStarttingStatus(self):
-        if self.switchStatus == 2:
-            self.switchStatus = -1
-        elif self.switchStatus == -2:
-            self.switchStatus = 1
-
-
-def changeStarttingStatusout():
-    global WorldSwitch
-    WorldSwitch.changeStarttingStatus()
-    # TODO callback
-
-
-class guiRenderReg:
-    def __init__(self):
-        self.tp = TextPropertiesManager.getGlobalPtr()
-        self.setWordStyle()
-
-    def setWordStyle(self):
-        try:
-            self.fg('purp', 0.8, 0.57, 0.95, 3.4)
-            self.fg('gray', 0.76, 0.75, 0.77, 1)
-            self.fg('pink', 0.86, 0.25, 0.6, 1)
-            self.fg('light', 0.8, 1, 0.5, 2)
-            self.fg('blgr', 0.5, 1, 0.9, 1.4)
-            self.fg('green', 0, 0.4, 1, 1.5)
-            self.fg('blue', 0.3, 0.5, 0.65, 1)
-            self.fg('blood', 0.83, 0.39, 0.44, 2)
-            self.fg('red', 1, 0.2, 0, 2)
-            self.fg('white', 1, 1, 1, 1)
-            self.setfont('cmtt12', 'roman')
-            # TODO no such font
-        except:
-            pass
-
-    def setfont(self, filepath, name):
-        self.font = base.loader.loadFont(filepath)
-        tpF = TextProperties()
-        tpF.setFont(self.font)
-        self.tp.setProperties(name, tpF)
-
-    def fg(self, name, r, g, b, a):
-        tpG = TextProperties()
-        tpG.setTextColor(r, g, b, a)
-        self.tp.setProperties(name, tpG)
-
-
-def getPath():
-    '''
-        绝对路径获取  
-        '''
-    path = os.path.abspath(sys.path[0])
-    return Filename.fromOsSpecific(path).getFullpath()
-
-
-class menuSwitch:
-    def __init__(self):
-        self.trigger = True
-
-    def switch(self):
-        global MenuIns,statusText
-        if self.trigger is False:
-            self.trigger = True
-            MenuIns.open()
-            statusText.show()
-        elif self.trigger is True:
-            self.trigger = False
-            MenuIns.hide()
-            statusText.hide()
-
-
-class keyRegMgr:
-    def __init__(self):
-        global WorldSwitch, MenuSwitch
-        WorldSwitch = worldSwitch()
-        MenuSwitch = menuSwitch()
-        base.accept('r', WorldSwitch.switch)
-        base.accept('q', MenuSwitch.switch)
-        base.accept('control-e', sys.exit)
-
-    def regKey(self):
-        base.accept('r', WorldSwitch.switch)
-        base.accept('q', MenuSwitch.switch)
-
-    def unregkeys(self):
-        base.ignore('q')
-        base.ignore('r')
-
-
-class TipMgr:
-    def __init__(self):
-        self.statusDict = {}
-        self.readcsv()
-
-    def readcsv(self):
-        csvPath = Filename(getPath() + '/res/config/Tips').toOsSpecific()
-        if os.path.exists(csvPath):
-            with open(csvPath, 'r') as tips:
-                line = tips.readline()
-                self.statusDict = eval(line)
-        else:
-            self.writecsv('NoTip', '0')
-            self.writecsv('NoVtip', '0')
-
-            self.readcsv()
-
-    def writecsv(self, key, value):
-        self.statusDict[key] = value
-        csvPath = Filename(getPath() + '/res/config/Tips').toOsSpecific()
-        with open(csvPath, 'w') as tips:
-            tips.write(str(self.statusDict))
-
-    def moveTip(self):
-        if self.statusDict['NoTip'] == '0':
-            movetipcontext = 'Use \'wasd\' to move, drag mouse to look around.\n\nChoose a card and click it to define your star.'
-            self.movetip = YesNoDialog(text=movetipcontext,
-                                       scale=1,
-                                       pos=(-0.02, 0, 0.22),
-                                       buttonTextList=['No tips', '\tNext'],
-                                       buttonValueList=[0, 1],
-                                       midPad=0.17,
-                                       button_relief=0,
-                                       relief=1,
-                                       command=self.controlTip)
-
-    def controlTip(self, lastchose):
-        if self.movetip:
-            self.movetip.destroy()
-        if lastchose:
-            pass
-        else:
-            self.writecsv('NoTip', '1')
-        controlTipContext = 'Press \"R\" to run\n\n  Press \"Q\" to hide the Menu\n\n    Press \"ctrl+e\" to exit'
-        self.controltip = YesNoCancelDialog(
-            text=controlTipContext,
-            scale=1,
-            pos=(-0.02, 0, 0.22),
-            buttonTextList=['No tips', '\tNext'],
-            buttonValueList=[0, 1],
-            midPad=0.1,
-            button_relief=0,
-            relief=1,
-            command=self.endControlTip)
-
-    def endControlTip(self, lastchose):
-        self.controltip.destroy()
-        if lastchose == 0:
-            self.writecsv('NoTip', '1')
-
-    def VariousTip(self):
-        try:
-            if self.Varioustip:
+            statusText['text'] = '\1white\1The world is \2\1red\1running\2'
+            objs = getcurrentobjects()
+            if not objs:
                 return None
+            else:
+                base.taskMgr.add(World.start, 'start')
+                self.switchStatus = 2
+        elif self.switchStatus == -1:
+            statusText['text'] = '\1white\1The world is \2\1red\1not running\2'
+            World.end()
+            self.switchStatus = -2
+
+    def changeStarttingStatus(self):
+        if self.switchStatus == 2:
+            self.switchStatus = -1
+        elif self.switchStatus == -2:
+            self.switchStatus = 1
+
+
+def changeStarttingStatusout():
+    global WorldSwitch
+    WorldSwitch.changeStarttingStatus()
+    # TODO callback
+
+
+class guiRenderReg:
+    def __init__(self):
+        self.tp = TextPropertiesManager.getGlobalPtr()
+        self.setWordStyle()
+
+    def setWordStyle(self):
+        try:
+            self.fg('purp', 0.8, 0.57, 0.95, 3.4)
+            self.fg('gray', 0.76, 0.75, 0.77, 1)
+            self.fg('pink', 0.86, 0.25, 0.6, 1)
+            self.fg('light', 0.8, 1, 0.5, 2)
+            self.fg('blgr', 0.5, 1, 0.9, 1.4)
+            self.fg('green', 0, 0.4, 1, 1.5)
+            self.fg('blue', 0.3, 0.5, 0.65, 1)
+            self.fg('blood', 0.83, 0.39, 0.44, 2)
+            self.fg('red', 1, 0.2, 0, 2)
+            self.fg('white', 1, 1, 1, 1)
+            self.setfont('cmtt12', 'roman')
+            # TODO no such font
         except:
             pass
-        if self.statusDict['NoVtip'] == '1':
-            return
+
+    def setfont(self, filepath, name):
+        self.font = base.loader.loadFont(filepath)
+        tpF = TextProperties()
+        tpF.setFont(self.font)
+        self.tp.setProperties(name, tpF)
+
+    def fg(self, name, r, g, b, a):
+        tpG = TextProperties()
+        tpG.setTextColor(r, g, b, a)
+        self.tp.setProperties(name, tpG)
+
+
+def getPath():
+    '''
+        绝对路径获取  
+        '''
+    path = os.path.abspath(sys.path[0])
+    return Filename.fromOsSpecific(path).getFullpath()
+
+
+class menuSwitch:
+    def __init__(self):
+        self.trigger = True
+
+    def switch(self):
+        global MenuIns, statusText
+        if self.trigger is False:
+            self.trigger = True
+            MenuIns.open()
+            statusText.show()
+        elif self.trigger is True:
+            self.trigger = False
+            MenuIns.hide()
+            statusText.hide()
+
+
+class keyRegMgr:
+    def __init__(self):
+        global WorldSwitch, MenuSwitch
+        WorldSwitch = worldSwitch()
+        MenuSwitch = menuSwitch()
+        base.accept('r', WorldSwitch.switch)
+        base.accept('q', MenuSwitch.switch)
+        base.accept('control-e', sys.exit)
+
+    def regKey(self):
+        base.accept('r', WorldSwitch.switch)
+        base.accept('q', MenuSwitch.switch)
+
+    def unregkeys(self):
+        base.ignore('q')
+        base.ignore('r')
+
+
+class TipMgr:
+    def __init__(self):
+        self.statusDict = {}
+        self.readcsv()
+
+    def readcsv(self):
+        csvPath = Filename(getPath() + '/res/config/Tips').toOsSpecific()
+        if os.path.exists(csvPath):
+            with open(csvPath, 'r') as tips:
+                line = tips.readline()
+                self.statusDict = eval(line)
         else:
-            t_k3 = 'You can click \1pink\1\"Various\"\2 to design you own star!!!\n\nAnd notice English input is acceptable'
-            self.Varioustip = YesNoDialog(
-                text=t_k3,
-                scale=1,
-                pos=(-0.02, 0, 0.22),
-                buttonTextList=['No tips', '\tClose'],
-                buttonValueList=[0, 1],
-                midPad=0.15,
-             
+            self.writecsv('NoTip', '0')
+            self.writecsv('NoVtip', '0')
             self.readcsv()
 
     def writecsv(self, key, value):
