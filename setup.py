@@ -1,12 +1,12 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-22 20:57:15
-@LastEditTime : 2019-12-26 00:28:07
+@LastEditTime : 2019-12-26 05:58:48
 '''
 if __name__ == '__main__':
     from setuptools import setup
 
-    setup(name="Stellar Movement Simulator",
+    setup(name="StellarMovementSimulator",
           options={
               'build_apps': {
                   'optimized_wheel_index': 'https://pypi.org/simple/',
@@ -23,11 +23,13 @@ if __name__ == '__main__':
                       ],
                   },
                   'gui_apps': {
-                      'Stellar Movement Simulator': 'main.py',
+                      'StellarMovementSimulator': 'main.py',
                   },
                   'platforms':
                   {
+                      'manylinux1_x86_64',
                       'win_amd64',
+                      'macosx_10_6_x86_64',
                   },
                   'plugins': [
                       'pandagl',
