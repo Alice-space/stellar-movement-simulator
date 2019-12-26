@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-25 10:03:35
-@LastEditTime : 2019-12-26 10:21:37
+@LastEditTime : 2019-12-26 10:30:55
 '''
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
@@ -447,9 +447,9 @@ class starCards:
                 lastobj = obj
             else:
                 if lastobj.switch is False:
-                    delta = -0.690
-                else:
                     delta = -0.365
+                else:
+                    delta = -0.690
                 card = DirectFrame(
                     pos=(0, 0, delta),
                     parent=self.Cards[lastobj.ID],
