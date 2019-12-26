@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-25 10:03:35
-@LastEditTime : 2019-12-26 10:30:55
+@LastEditTime : 2019-12-26 11:19:45
 '''
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
@@ -79,7 +79,7 @@ class Menu:
         if self.changeButtonSW is True:
             self.Ch_button = DirectButton(parent=self.StarMenu,
                                           relief=2,
-                                          scale=0.252,
+                                          scale=0.25,
                                           pos=(-0.3, 0, -0.86),
                                           text='Change',
                                           text_scale=0.25,
@@ -87,7 +87,7 @@ class Menu:
         else:
             self.Ch_button = DirectButton(parent=self.StarMenu,
                                           relief=2,
-                                          scale=0.254,
+                                          scale=0.2505,
                                           pos=(-0.3, 0, -0.86),
                                           text='Done',
                                           text_scale=0.25,
@@ -446,7 +446,7 @@ class starCards:
                 self.Cards[obj.ID] = card
                 lastobj = obj
             else:
-                if lastobj.switch is False:
+                if lastobj.switch is False or lastobj.switch is None:
                     delta = -0.365
                 else:
                     delta = -0.690
@@ -588,6 +588,8 @@ class starCards:
     def closeDetailCard(self, choice, obj):
         '''
         关闭卡片详情，事件处理
+        .. todo ::
+            chang args nouse
         '''
         if choice == -1:
             obj.switch = False

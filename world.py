@@ -4,7 +4,7 @@
 
 @Author: Alicespace  
 @Date: 2019-11-18 08:06:30  
-@LastEditTime : 2019-12-26 04:50:12
+@LastEditTime : 2019-12-26 11:18:33
 
 '''
 
@@ -343,6 +343,8 @@ class world(ShowBase):
     def spinCamera(self, task):
         '''
         注册```Panda```任务来旋转摄像机
+        .. todo ::
+            将鼠标拉回
         '''
         global prevMouseX
         global prevMouseY
