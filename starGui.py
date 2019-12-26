@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-25 10:03:35
-@LastEditTime : 2019-12-26 05:18:51
+@LastEditTime : 2019-12-26 10:21:37
 '''
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
@@ -78,17 +78,17 @@ class Menu:
         '''
         if self.changeButtonSW is True:
             self.Ch_button = DirectButton(parent=self.StarMenu,
-                                          relief=1,
+                                          relief=2,
                                           scale=0.252,
-                                          pos=(-0.3, 0, -0.9),
+                                          pos=(-0.3, 0, -0.86),
                                           text='Change',
                                           text_scale=0.25,
                                           command=self.changeButtonHandler)
         else:
             self.Ch_button = DirectButton(parent=self.StarMenu,
-                                          relief=1,
-                                          scale=0.252,
-                                          pos=(-0.3, 0, -0.9),
+                                          relief=2,
+                                          scale=0.254,
+                                          pos=(-0.3, 0, -0.86),
                                           text='Done',
                                           text_scale=0.25,
                                           command=self.changeButtonHandler)
@@ -398,6 +398,7 @@ class starCards:
         self.StarMenucanvas = MenuIns.StarMenucanvas
         self.objs = getcurrentobjects()
         self.generateCard()
+
 
     def selectRandomTexture(self, objtype):
         '''

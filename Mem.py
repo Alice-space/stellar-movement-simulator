@@ -105,7 +105,7 @@ class StellarObject:
         self.mass = m
         self.radius = r
         self.order = order
-        self.switch = None
+        self.switch = False
         self.temptime = objdata[0][0]
         self.objtype = objtype
         self.texture = texture

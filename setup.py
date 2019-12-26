@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-22 20:57:15
-@LastEditTime : 2019-12-26 05:58:48
+@LastEditTime : 2019-12-26 06:01:42
 '''
 if __name__ == '__main__':
     from setuptools import setup
@@ -27,12 +27,13 @@ if __name__ == '__main__':
                   },
                   'platforms':
                   {
-                      'manylinux1_x86_64',
-                      'win_amd64',
                       'macosx_10_6_x86_64',
-                  },
+                                    },
                   'plugins': [
                       'pandagl',
                   ],
               }
           })
+'''win_amd64,manylinux1_x86_64
+                      macosx_10_6_x86_64,
+    '''
