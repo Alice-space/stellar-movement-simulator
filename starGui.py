@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-25 10:03:35
-@LastEditTime : 2019-12-26 11:19:45
+@LastEditTime : 2019-12-30 14:28:10
 '''
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
@@ -42,9 +42,13 @@ class Menu:
         self.StarMenucanvas = self.StarMenu.getCanvas()
         self.StarMenucanvasParent = self.StarMenucanvas.getParent()
         path0 = getPath() + '/res/texture/gui-texture/'
+        try:
+            rateValue=self.rateGot
+        except:
+            rateValue=20
         self.timeRateBar = DirectScrollBar(
             parent=self.StarMenu,
-            value=20,
+            value=rateValue,
             range=(0, 80),
             pageSize=2,
             scrollSize=1,
@@ -135,11 +139,10 @@ class Menu:
         '''
         时间比例更改
         '''
-        rateGot = self.timeRateBar['value']
-        rateGot = 1 / (2**(int(rateGot / 8)))
+        self.rateGot = self.timeRateBar['value']
+        rateGot = 1 / (2**(int(self.rateGot / 8)))
         global World
         World.changeTimeRate(rateGot)
-        # TODO refresh when rebuild menu
 
     def generateFixedCards(self):
         '''
