@@ -78,18 +78,18 @@ class Menu:
         '''
         if self.changeButtonSW is True:
             self.Ch_button = DirectButton(parent=self.StarMenu,
-                                          relief=2,
+                                          relief=0,
                                           scale=0.25,
                                           pos=(-0.3, 0, -0.86),
-                                          text='Change',
+                                          text='\1light\1Change\2',
                                           text_scale=0.25,
                                           command=self.changeButtonHandler)
         else:
             self.Ch_button = DirectButton(parent=self.StarMenu,
-                                          relief=2,
+                                          relief=0,
                                           scale=0.2505,
                                           pos=(-0.3, 0, -0.86),
-                                          text='Done',
+                                          text='\1light\1Done\2',
                                           text_scale=0.25,
                                           command=self.changeButtonHandler)
 
