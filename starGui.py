@@ -139,6 +139,7 @@ class Menu:
         rateGot = 1 / (2**(int(rateGot / 8)))
         global World
         World.changeTimeRate(rateGot)
+        # TODO refresh when rebuild menu
 
     def generateFixedCards(self):
         '''
