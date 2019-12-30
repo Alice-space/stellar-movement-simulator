@@ -33,9 +33,12 @@ class Menu:
         2. 创建上方状态栏  
         '''
         self.errorWarnings = {}
-        size = (0, 0.99, -1.3, 1)
+        try:
+            size=canvasSize
+        except:
+            size = (0, 0.99, -1.08, 1)
         self.StarMenu = DirectScrolledFrame(relief=0,
-                                            frameSize=(0, 0.99, -1.1, 1),
+                                            frameSize=(0, 0.99, -1.04, 1),
                                             canvasSize=size,
                                             pos=(0.79, 0, 0),
                                             scrollBarWidth=0.04)
@@ -107,15 +110,19 @@ class Menu:
             World.end()
             WorldSwitch.switchStatus = 1
             update()
-            self.StarMenu.destroy()
-            self.init()
-            self.open()
             self.changeButtonSW = False
+            self.Ch_button.destroy()
+            self.changeButtonSwitch()
         else:
-            self.StarMenu.destroy()
-            self.init()
-            self.open()
+            try:
+                self.detailCardFrame.destory()
+            except:
+                pass
             self.changeButtonSW = True
+            self.Ch_button.destroy()
+            self.changeButtonSwitch()
+        global StarCards
+        StarCards.init()
 
     def open(self):
         '''
@@ -350,16 +357,18 @@ class Menu:
             if legitimate:
                 reinitialize()
                 if newStar is False:
-                    if dataS[0] is None:
-                        dataS[0] = 'Default Object'
+                    if not dataS[0]:
+                        dataS[0] = '\1white\1Default Object\2'
                     else:
                         pass
                     star.name, star.mass, star.radius,
                     star.cor[0], star.cor[1], star.cor[2],
                     star.vel[0], star.vel[1], star.vel[2],
                     star.texture = dataS + [self.Filepath]
+                    #Arguments change has no efficacy
+                    #Here is something Mem.py need to do
                 else:
-                    if dataS[0] is None:
+                    if not dataS[0]:
                         dataS[0] = '\1white\1Default Object\2'
                     else:
                         pass
@@ -370,15 +379,18 @@ class Menu:
                                   radius=dataS[2],
                                   vel=[dataS[6], dataS[7], dataS[8]],
                                   cor=[dataS[3], dataS[4], dataS[5]])
+                    global canvasSize
                     canvasSize = (0, 0.996,
-                                  self.StarMenu['canvasSize'][2] - 0.675, 1)
+                                  self.StarMenu['canvasSize'][2] - 0.690, 1)
                 self.detailCardFrame.destroy()
+                self.StarMenu.destroy()
+                self.init()
+                global StarCards
+                StarCards.init()
                 global KeyReg
                 KeyReg.regKey()
                 global Tipmgr
                 Tipmgr.endVariousTip(0)
-                global StarCards
-                StarCards.init()
             else:
                 pass
         elif button == 0:  # "Close"
@@ -584,10 +596,7 @@ class starCards:
         打开卡片详情
         '''
         obj.switch = True
-        global MenuIns
-        MenuIns.StarMenu.destroy()
-        MenuIns.init()
-        MenuIns.open()
+        self.init()
 
     def closeDetailCard(self, choice, obj):
         '''
@@ -597,19 +606,19 @@ class starCards:
         '''
         if choice == -1:
             obj.switch = False
-            global MenuIns
-            MenuIns.StarMenu.destroy()
-            MenuIns.init()
-            MenuIns.open()
+            self.init()
         elif choice == 0:
             MenuIns.generateDetailCard(0, obj.objtype, False, star=obj)
         else:
-            processdelete(obj)
+            #delete has no efficacy
             reinitialize()
-            self.objs = getcurrentobjects()
+            processdelete(obj)
+            global canvasSize
+            canvasSize = (0, 0.996,
+                        MenuIns.StarMenu['canvasSize'][2] + 0.690, 1)
             MenuIns.StarMenu.destroy()
             MenuIns.init()
-            MenuIns.open()
+            self.init()
 
 
 def update():
@@ -679,6 +688,7 @@ class guiRenderReg:
             self.fg('red', 1, 0.2, 0, 2)
             self.fg('white', 1, 1, 1, 1)
             self.setfont('cmtt12', 'roman')
+            self.slant('slant',0.25)
             # TODO no such font
         except:
             pass
@@ -693,6 +703,11 @@ class guiRenderReg:
         tpG = TextProperties()
         tpG.setTextColor(r, g, b, a)
         self.tp.setProperties(name, tpG)
+
+    def slant(self,name,slantNum):
+        tpS = TextProperties()
+        tpS.setSlant(slantNum)
+        self.tp.setProperties(name,tpS)
 
 
 def getPath():
@@ -732,7 +747,11 @@ class keyRegMgr:
         MenuSwitch = menuSwitch()
         base.accept('r', WorldSwitch.switch)
         base.accept('q', MenuSwitch.switch)
-        base.accept('control-e', sys.exit)
+        base.accept('control-e', self.Exit)
+
+    def Exit(self):
+        base.destroy()
+        sys.exit()
 
     def regKey(self):
         base.accept('r', WorldSwitch.switch)
@@ -788,8 +807,8 @@ class TipMgr:
             pass
         else:
             self.writecsv('NoTip', '1')
-        controlTipContext = 'Press \"R\" to run\n\n  Press \"Q\" to hide the Menu\n\n    Press \"ctrl+e\" to exit'
-        self.controltip = YesNoCancelDialog(
+        controlTipContext = 'Press \"R\" to run\n\n  Press \"Q\" to hide the Menu\n\n    Press \"ctrl+e\" to exit\n\n And more importantly,\n\n\1red\1Stop running\2 if you want to add some stars!!!'
+        self.controltip = YesNoDialog(
             text=controlTipContext,
             scale=1,
             pos=(-0.02, 0, 0.22),
@@ -804,6 +823,7 @@ class TipMgr:
         self.controltip.destroy()
         if lastchose == 0:
             self.writecsv('NoTip', '1')
+        
 
     def VariousTip(self):
         try:
@@ -858,11 +878,11 @@ class gui(ShowBase):
         global Tipmgr
         Tipmgr = TipMgr()
         Tipmgr.moveTip()
+        global StarCards
+        StarCards = starCards()
         global MenuIns
         MenuIns = Menu()
         MenuIns.init()
-        global StarCards
-        StarCards = starCards()
         t_k = '\1white\1The world is \2\1red\1not running\2'
         statusText = OnscreenText(
             text=t_k,
