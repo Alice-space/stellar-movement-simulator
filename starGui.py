@@ -842,14 +842,14 @@ class TipMgr:
                 scale=1,
                 pos=(-0.02, 0, 0.22),
                 buttonTextList=['No tips', '\tClose'],
-                buttonValueList=[0, 1],
+                buttonValueList=[1, 0],
                 midPad=0.15,
                 button_relief=0,
                 relief=1,
                 command=self.endVariousTip)
 
     def endVariousTip(self, lastchose):
-        if lastchose == 1:
+        if lastchose == 0:
             pass
         else:
             self.writecsv('NoVtip', '1')

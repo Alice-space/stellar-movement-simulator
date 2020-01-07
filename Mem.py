@@ -2,7 +2,6 @@ import time
 import copy
 
 from collections import deque
-
 """ This module is the database for the program. GUI will input data given by
 the user. The module calculateloop will get data from here, calculate, and put
 the data back in. The 3DWorld module will output data, in the process clearing
@@ -93,12 +92,21 @@ objects, lennum, objnum, t0, totalorder, safetynum = [], 0, 0 - 1, 0, 0, 60
 
 triggerstate, calculatestate = False, False
 
+
 class StellarObject:
-
     ''' See the notes for the whole module. '''
-
-    def __init__(self, m, r, ID, objtype, texture, objdata = [], order = 0, 
-                     read = True, write = True, name = "Default", namels = []):
+    def __init__(self,
+                 m,
+                 r,
+                 ID,
+                 objtype,
+                 texture,
+                 objdata=[],
+                 order=0,
+                 read=True,
+                 write=True,
+                 name="Default",
+                 namels=[]):
         self.ID = ID
         self.name = name
         self.namels = namels
@@ -109,7 +117,6 @@ class StellarObject:
         self.temptime = objdata[0][0]
         self.objtype = objtype
         self.texture = texture
-
         ''' objtype falls in one of the four types "starO", "starG", "Jplanet"
 and "Eplanet", representing O-type main sequence star, G-type main sequence st
 ar, Jupiter-like planet and Earth-like planet. texture is the picture that will
@@ -118,12 +125,10 @@ be pasted to the surface of the star shown in the 3DWorld. '''
         self.texture2D = None
         self.readstate = read
         self.writestate = write
-        self.vel = objdata[0][1: 4]
-        self.cor = objdata[0][4: 7]
+        self.vel = objdata[0][1:4]
+        self.cor = objdata[0][4:7]
         self.objdata = deque(objdata)
-
         ''' objdata = [[t, vel, cor]] '''
-
     def dataIN(self, ls):
         self.objdata.append(ls)
         return None
@@ -141,8 +146,8 @@ be pasted to the surface of the star shown in the 3DWorld. '''
                 return templs
             else:
                 templs = self.objdata.popleft()
-                self.vel = templs[1: 4]
-                self.cor = templs[4: 7]
+                self.vel = templs[1:4]
+                self.cor = templs[4:7]
                 tempt = templs[0]
                 templs[0] = templs[0] - self.temptime
                 self.temptime = tempt
@@ -150,8 +155,8 @@ be pasted to the surface of the star shown in the 3DWorld. '''
         else:
             if len(self.objdata) >= 1 + safetynum:
                 templs = self.objdata.popleft()
-                self.vel = templs[1: 4]
-                self.cor = templs[4: 7]
+                self.vel = templs[1:4]
+                self.cor = templs[4:7]
                 tempt = templs[0]
                 templs[0] = templs[0] - self.temptime
                 self.temptime = tempt
@@ -159,15 +164,15 @@ be pasted to the surface of the star shown in the 3DWorld. '''
             else:
                 raise ValueError("Need more calculation")
 
-def changestate(ordernum):
 
+def changestate(ordernum):
     ''' This function deals with the variable triggerstate which acts as a swit
 ch and the variable totalorder. By setting triggerstate = True, whoever using t
 he data from the database will know that some sort of emerging event has happen
 ed and the user needs to get a new object list for further usage, while trigger
 state = False means no emerging event happend. The use of order is discussed in
 the function appendstate. '''
-    
+
     global triggerstate
     triggerstate = True
     for obj in objects:
@@ -187,8 +192,8 @@ the function appendstate. '''
             pass
     return None
 
-def appendstate():
 
+def appendstate():
     ''' This function deals with the variable totalorder. The property order is
 used to deal with the problem of which part of data should be used. If an emerg
 ing event happens, every surviving object will get a new order. Those with this
@@ -198,33 +203,49 @@ have a higher order than the objects they come from. They will join others when
 all the data in the emerged objects is used up, and the functions changestate &
 appendstate are called.) With this property, different parts of the data can be
 separated. '''
-    
+
     global totalorder
     totalorder = totalorder + 1
     return None
 
-def createobject(objtype, texture, myname = "Default", ls = [], order = 0,
-                          vel = [], cor = [], time = 0, mass = 0, radius = 0,
-                          read = True, write = True):
 
+def createobject(objtype,
+                 texture,
+                 myname="Default",
+                 ls=[],
+                 order=0,
+                 vel=[],
+                 cor=[],
+                 time=0,
+                 mass=0,
+                 radius=0,
+                 read=True,
+                 write=True):
     ''' This function creates a new object for writing data. It is called eith
 er by the GUI module or by the calculateloop module during calculation. '''
-    
+
     global objnum
     objnum = objnum + 1
     datalist = [[time] + vel + cor]
-    obj = StellarObject(m = mass, r = radius, ID = objnum,
-                              objtype = objtype, texture = texture, 
-                              read = read, write = write, order = order,
-                              name = myname, namels = ls, objdata = datalist)
+    obj = StellarObject(m=mass,
+                        r=radius,
+                        ID=objnum,
+                        objtype=objtype,
+                        texture=texture,
+                        read=read,
+                        write=write,
+                        order=order,
+                        name=myname,
+                        namels=ls,
+                        objdata=datalist)
     objects.append(obj)
     return None
 
-def deleteobject(obj):
 
+def deleteobject(obj):
     ''' This function deletes an existing objects for writing data. It is only
 called by the calculateloop module. '''
-    
+
     obj.writestate = False
     if len(obj.objdata) == 0:
         obj.readstate = False
@@ -232,60 +253,59 @@ called by the calculateloop module. '''
         pass
     return None
 
-def getobjectsdata():
 
+def getobjectsdata():
     ''' Get the final data of all objects to calculate. The list objectsdata is
 in the form listed below. (A trivial function) '''
-
     """ objectsdata = [[ti, vxi, vyi, vzi, xi, yi, zi, mi]] """
-    
+
     objectsdata = []
     for obj in objects:
-        if obj.writestate == True:
+        if obj.writestate is True:
             mydata = obj.objdata.pop()
-            mylist = [obj.mass] + mydata[1: 7] + [mydata[0]]
+            mylist = [obj.mass] + mydata[1:7] + [mydata[0]]
             objectsdata.append(mylist)
         else:
             pass
     return objectsdata
 
-def getobjects():
 
+def getobjects():
     ''' Get all objects to calculate. (A trivial function) '''
-    
+
     templs = []
     for obj in objects:
-        if obj.writestate == True:
+        if obj.writestate is True:
             templs.append(obj)
         else:
             pass
     return templs
+
 
 def getcurrentobjects():
-
     ''' Get all objects to draw the 3D world and to show the objects in the GUI
 . (A trivial function) '''
-    
+
     templs = []
     for obj in objects:
-        if obj.readstate == True:
+        if obj.readstate is True:
             templs.append(obj)
         else:
             pass
     return templs
 
-def reinitialize():
 
+def reinitialize():
     ''' This function reinitializes the database. Only called by the GUI modu
 le. (A trivial function) '''
-    
-    while calculatestate == True:
+
+    while calculatestate is True:
         time.sleep(1)
-    global lennum, t0, totalorder, triggerstate,objects
+    global lennum, t0, totalorder, triggerstate, objects
     lennum, t0, totalorder, triggerstate = 0, 0, 0, False
     temp = []
     for obj in objects:
-        if obj.readstate == True:
+        if obj.readstate is True:
             obj.writestate = True
             obj.order = 0
             obj.temptime = 0
@@ -294,36 +314,51 @@ le. (A trivial function) '''
     objects = temp
     return None
 
-def processcreate(objtype, texture, myname = "Default", ls = [], order = 0,
-                           vel = [], cor = [], time = 0, mass = 0, radius = 0,
-                           read = True, write = True):
 
+def processcreate(objtype,
+                  texture,
+                  myname="Default",
+                  ls=[],
+                  order=0,
+                  vel=[],
+                  cor=[],
+                  time=0,
+                  mass=0,
+                  radius=0,
+                  read=True,
+                  write=True):
     ''' This function creates stellar objects in the process of the program. On
 ly be called by the GUI module. (A trivial function) '''
-    
+
     global objnum
     objnum = objnum + 1
     datalist = [[time] + vel + cor]
-    obj = StellarObject(m = mass, r = radius, ID = objnum,
-                              objtype = objtype, texture = texture, 
-                              read = read, write = write, order = order,
-                              name = myname, namels = ls, objdata = datalist)
+    obj = StellarObject(m=mass,
+                        r=radius,
+                        ID=objnum,
+                        objtype=objtype,
+                        texture=texture,
+                        read=read,
+                        write=write,
+                        order=order,
+                        name=myname,
+                        namels=ls,
+                        objdata=datalist)
     objects.append(obj)
     return None
 
-def processdelete(obj):
 
+def processdelete(obj):
     ''' This function deletes stellar objects in the process of the program. On
 ly be called by the GUI module. (A trivial function) '''
-    
 
     objects.remove(obj)
     return None
 
-def returnnum():
 
+def returnnum():
     ''' Return the length of the database. (A trivial function) '''
-    
+
     global lennum
     try:
         lennum = max([len(obj.objdata) for obj in objects])
