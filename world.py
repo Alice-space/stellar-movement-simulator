@@ -4,7 +4,7 @@
 
 @Author: Alicespace  
 @Date: 2019-11-18 08:06:30  
-@LastEditTime : 2019-12-26 11:18:33
+@LastEditTime : 2020-01-07 20:30:28
 
 '''
 
@@ -111,18 +111,16 @@ class world(ShowBase):
         '''
         设置摄像机旋转初始值
         '''
-        global prevMouseX
-        global prevMouseY
-        global prevMouseVal
-        global prevDxs
-        global prevDys
-        global totalSmoothStore
-        prevMouseVal = 0
-        prevMouseX = 0
-        prevMouseY = 0
-        prevDxs = []
-        prevDys = []
-        totalSmoothStore = 10
+        self.mouseChangeX = 0
+        self.mouseChangeY = 0
+        self.windowSizeX = base.win.getXSize()
+        self.windowSizeY = base.win.getYSize()
+        self.centerX = self.windowSizeX / 2
+        self.centerY = self.windowSizeY / 2
+        self.H = base.camera.getH()
+        self.P = base.camera.getP()
+        self.pos = base.camera.getPos()
+        self.sensitivity = .2
 
     def setup(self):
         '''
@@ -130,13 +128,13 @@ class world(ShowBase):
         常量初始化  
         '''
         base.disableMouse()
-        # 鼠标放在中间
-        global isEnded
-        isEnded = False
+
+        global isEnding
+        isEnding = False
 
         global CountUpdateGui
         CountUpdateGui = 0
-
+        # 鼠标放在中间
         base.win.movePointer(0, int(base.win.getXSize() / 2),
                              int(base.win.getYSize() / 2))
         self.cameraSpeed = cameraSpeed()
@@ -171,8 +169,8 @@ class world(ShowBase):
         """
         启动3D世界
         """
-        global isEnded
-        if isEnded:
+        global isEnding
+        if isEnding:
             try:
                 if self.startTask:
                     pass
@@ -182,7 +180,7 @@ class world(ShowBase):
         else:
             self.loadmodelsinit()
             self.calculateStarTask = base.taskMgr.add(self.calculateStar,
-                                                    'calculateStar')
+                                                      'calculateStar')
             self.detectOrdTask = base.taskMgr.add(self.detectOrd, 'detectOrd')
             starGui.changeStarttingStatusout()
 
@@ -190,8 +188,8 @@ class world(ShowBase):
         '''
         结束绘制世界
         '''
-        global isEnded
-        isEnded = True
+        global isEnding
+        isEnding = True
 
     def takeMouseBack(self):
         '''
@@ -343,51 +341,16 @@ class world(ShowBase):
     def spinCamera(self, task):
         '''
         注册```Panda```任务来旋转摄像机
-        .. todo ::
-            将鼠标拉回
         '''
-        global prevMouseX
-        global prevMouseY
-        global prevMouseVal
-        global prevDxs
-        global prevDys
-        global totalSmoothStore
-        centerX = base.win.getXSize() / 2
-        centerY = base.win.getYSize() / 2
-        md = base.win.getPointer(0)
-        x = md.getX()
-        y = md.getY()
-        if prevMouseVal == 0:
-            prevMouseVal = 1
-            prevDxs = []
-            prevDys = []
-        else:
-            dx = x - prevMouseX
-            dy = y - prevMouseY
-            if len(prevDxs) > totalSmoothStore:
-                prevDxs.pop(0)
-            if len(prevDys) > totalSmoothStore:
-                prevDys.pop(0)
-
-            prevDxs.append(dx)
-            prevDys.append(dy)
-
-            curAverageDx = 0.
-            for curDx in prevDxs:
-                curAverageDx += curDx
-            curAverageDx = curAverageDx / len(prevDxs)
-
-            curAverageDy = 0.
-            for curDy in prevDys:
-                curAverageDy += curDy
-            curAverageDy = curAverageDy / len(prevDys)
-            base.camera.setP(base.camera.getP() -
-                             5 * globalClock.getDt() * curAverageDy)
-            base.camera.setH(base.camera.getH() +
-                             5 * globalClock.getDt() * curAverageDx)
-
-        prevMouseX = x
-        prevMouseY = y
+        mouse = base.win.getPointer(0)
+        x = mouse.getX()
+        y = mouse.getY()
+        if base.win.movePointer(0, int(self.centerX), int(self.centerY)):
+            self.mouseChangeX = self.centerX - x
+            self.mouseChangeY = self.centerY - y
+            self.H += self.mouseChangeX * self.sensitivity
+            self.P += self.mouseChangeY * self.sensitivity
+            base.camera.setHpr(self.H, self.P, 0)
         return task.cont
 
     def detectOrd(self, task):
@@ -395,9 +358,9 @@ class world(ShowBase):
         检测`Mem.riggerstate`，判断是否发生融合事件
         '''
         global objs
-        global ObjOrder, isEnded
-        if isEnded:
-            isEnded = False
+        global ObjOrder, isEnding
+        if isEnding:
+            isEnding = False
             self.calculateStarTask.remove()
             starGui.changeStarttingStatusout()
             return task.done
