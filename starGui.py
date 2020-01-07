@@ -1,7 +1,7 @@
 '''
-@Author: Alicespace
+@Author: Longjun
 @Date: 2019-12-25 10:03:35
-@LastEditTime : 2019-12-30 14:28:10
+@LastEditTime : 2020-01-07 20:51:33
 '''
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
