@@ -13,11 +13,13 @@ from direct.actor import Actor
 from direct.interval.IntervalGlobal import *
 from panda3d.core import *
 from panda3d.core import TransparencyAttrib
+import Mem
 from Mem import createobject, reinitialize, objects, processcreate, getcurrentobjects, processdelete
 import world
 import sys, csv, os, random
 import tkinter as tk
 from tkinter import filedialog
+from collections import deque
 global objTypes
 objTypes = ['Eplanet', 'Jplanet', 'starO', 'starG']
 
@@ -33,13 +35,9 @@ class Menu:
         2. 创建上方状态栏  
         '''
         self.errorWarnings = {}
-        try:
-            size=canvasSize
-        except:
-            size = (0, 0.99, -1.08, 1)
         self.StarMenu = DirectScrolledFrame(relief=0,
                                             frameSize=(0, 0.99, -1.04, 1),
-                                            canvasSize=size,
+                                            canvasSize=(0, 0.99, -1.08, 1),
                                             pos=(0.79, 0, 0),
                                             scrollBarWidth=0.04)
         self.StarMenucanvas = self.StarMenu.getCanvas()
@@ -121,6 +119,7 @@ class Menu:
             self.changeButtonSW = True
             self.Ch_button.destroy()
             self.changeButtonSwitch()
+        reinitialize()
         global StarCards
         StarCards.init()
 
@@ -214,9 +213,10 @@ class Menu:
         Tipmgr.VariousTip()
 
         try:
-            self.detailCardFrame.destory()
+            self.detailCardFrame.destroy()
         except:
             pass
+        
         try:
             if self.Filepath:
                 pass
@@ -290,7 +290,8 @@ class Menu:
             pass
         else:
             dataS = [
-                star.name, star.mass, star.radius, star.cor[0], star.cor[1],
+                star.name[7:-1]#去掉文字渲染
+                , star.mass, star.radius, star.cor[0], star.cor[1],
                 star.cor[2], star.vel[0], star.vel[1], star.vel[2]
             ]
             for num in range(9):
@@ -355,19 +356,21 @@ class Menu:
                     legitimate = False
                     self.errorWarnings[le] = t
             if legitimate:
-                reinitialize()
                 if newStar is False:
+                    star.name='\1white\1Me\2'
                     if not dataS[0]:
                         dataS[0] = '\1white\1Default Object\2'
                     else:
                         pass
-                    star.name, star.mass, star.radius,
-                    star.cor[0], star.cor[1], star.cor[2],
-                    star.vel[0], star.vel[1], star.vel[2],
+                    star.name, star.mass, star.radius,\
+                    star.cor[0], star.cor[1], star.cor[2],\
+                    star.vel[0], star.vel[1], star.vel[2],\
                     star.texture = dataS + [self.Filepath]
+                    star.objdata = deque([[0] + dataS[6: 9] +dataS[3: 6]])
                     #Arguments change has no efficacy
                     #Here is something Mem.py need to do
                 else:
+                    reinitialize()
                     if not dataS[0]:
                         dataS[0] = '\1white\1Default Object\2'
                     else:
@@ -379,12 +382,7 @@ class Menu:
                                   radius=dataS[2],
                                   vel=[dataS[6], dataS[7], dataS[8]],
                                   cor=[dataS[3], dataS[4], dataS[5]])
-                    global canvasSize
-                    canvasSize = (0, 0.996,
-                                  self.StarMenu['canvasSize'][2] - 0.690, 1)
                 self.detailCardFrame.destroy()
-                self.StarMenu.destroy()
-                self.init()
                 global StarCards
                 StarCards.init()
                 global KeyReg
@@ -413,6 +411,17 @@ class starCards:
         global MenuIns
         self.StarMenucanvas = MenuIns.StarMenucanvas
         self.objs = getcurrentobjects()
+        self.objsNum=len(self.objs)
+        if self.objsNum<=2:
+            canvasLence=-1.08
+        else:
+            canvasLence=-1.08-(self.objsNum-2)*0.36
+        for obj in self.objs:
+            if obj.switch is True:
+                canvasLence-=0.33
+            else:
+                pass
+        MenuIns.StarMenu['canvasSize']=(0,0.996,canvasLence,1)
         self.generateCard()
 
 
@@ -463,7 +472,7 @@ class starCards:
                 lastobj = obj
             else:
                 if lastobj.switch is False or lastobj.switch is None:
-                    delta = -0.365
+                    delta = -0.36
                 else:
                     delta = -0.690
                 card = DirectFrame(
@@ -611,13 +620,7 @@ class starCards:
             MenuIns.generateDetailCard(0, obj.objtype, False, star=obj)
         else:
             #delete has no efficacy
-            reinitialize()
             processdelete(obj)
-            global canvasSize
-            canvasSize = (0, 0.996,
-                        MenuIns.StarMenu['canvasSize'][2] + 0.690, 1)
-            MenuIns.StarMenu.destroy()
-            MenuIns.init()
             self.init()
 
 
