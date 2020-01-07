@@ -283,7 +283,7 @@ le. (A trivial function) '''
         time.sleep(1)
     global lennum, t0, totalorder, triggerstate,objects
     lennum, t0, totalorder, triggerstate = 0, 0, 0, False
-    tmp = []
+    temp = []
     for obj in objects:
         if obj.readstate == True:
             obj.writestate = True
@@ -291,8 +291,8 @@ le. (A trivial function) '''
             obj.switch = None
             obj.temptime = 0
             obj.objdata = deque([[0] + obj.vel + obj.cor])
-            tmp.append(obj)
-    objects = copy.deepcopy(tmp)
+            temp.append(obj)
+    objects = temp
     return None
 
 def processcreate(objtype, texture, myname = "Default", ls = [], order = 0,
