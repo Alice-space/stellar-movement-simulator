@@ -102,6 +102,7 @@ class Menu:
         '''
         changeButton的事件响应
         '''
+        global KeyReg
         if self.changeButtonSW is True:
             global World
             global WorldSwitch
@@ -111,6 +112,7 @@ class Menu:
             self.changeButtonSW = False
             self.Ch_button.destroy()
             self.changeButtonSwitch()
+            KeyReg.unregkeys()
         else:
             try:
                 self.detailCardFrame.destory()
@@ -119,6 +121,7 @@ class Menu:
             self.changeButtonSW = True
             self.Ch_button.destroy()
             self.changeButtonSwitch()
+            KeyReg.regKey()
         global statusText
         statusText['text']='\1white\1The world is \2\1red\1not running\2'
         reinitialize()
@@ -213,7 +216,14 @@ class Menu:
         KeyReg.unregkeys()
         global Tipmgr
         Tipmgr.VariousTip()
-
+        global WorldSwitch,World,statusText
+        '''try:
+            World.end()
+            statusText['text']='\1white\1The world is \2\1red\1not running\2'
+            WorldSwitch.Switchstatus= 1
+        except:
+            pass'''
+        
         try:
             self.detailCardFrame.destroy()
         except:
@@ -224,6 +234,8 @@ class Menu:
                 pass
         except:
             self.Filepath = None
+
+        
         self.detailCardFrame = DirectFrame(parent=self.StarMenu,
                                            relief=1,
                                            frameSize=(0, 0.8, -1, 1),
@@ -475,7 +487,7 @@ class starCards:
                 if lastobj.switch is False or lastobj.switch is None:
                     delta = -0.36
                 else:
-                    delta = -0.690
+                    delta = -0.685
                 card = DirectFrame(
                     pos=(0, 0, delta),
                     parent=self.Cards[lastobj.ID],
@@ -511,70 +523,76 @@ class starCards:
             if obj.switch is True:
                 infoCard = DirectFrame(parent=card,
                                        frameTexture=card['frameTexture'],
-                                       frameSize=(0, 0.91, -0.32, 0),
+                                       frameSize=(-0.008, 0.909, -0.32, 0),
                                        relief=1)
-                infoCard.setPos(0.025, 0, -0.35)
+                infoCard.setPos(0.025, 0, -0.349)
 
                 velo, posi = list(range(3)), list(range(3))
                 vl = ['\1roman\1vx\2', '\1roman\1vy\2', '\1roman\1vz\2']
                 ps = ['\1roman\1x\2', '\1roman\1y\2', '\1roman\1z\2']
                 v, p = obj.vel, obj.cor
-                for i in range(3):
-                    velo[i] = DirectEntry(
-                        parent=infoCard,
-                        text='{:'
-                        '>8}'.format(int(v[i])) +
-                        '{:.3f}'.format(v[i] - int(v[i]))[1:],
-                        text_mayChange=False,
-                        text_pos=(-2.75,0,0),
-                        scale=.035,
-                        pos=(0.15 + i * 0.25, 0, -0.218),
-                        relief=1,
-                        width=5.25,
-                    )
-                    vl[i] = OnscreenText(parent=velo[i],
-                                         text=vl[i],
-                                         scale=1.2,
-                                         pos=(-3.7, 0, 0),
-                                         fg=(0.5, 1, 0.9, 1))
-                V = OnscreenText(parent=velo[1],
-                                 text='\1roman\1Velocity\2',
-                                 scale=1.2,
-                                 pos=(0, 1.5, 0),
-                                 align=TextNode.ACenter,
-                                 fg=(0.9, 0.85, 0.14, 1))
-                UnV = OnscreenText(parent=velo[2],
-                                   text='\1roman\1\1blgr\1km/s\2\2',
-                                   scale=1.2,
-                                   pos=(4.2, 0, 0))
-                for j in range(3):
-                    posi[j] = DirectEntry(
-                        parent=infoCard,
-                        text='{:'
-                        '>8}'.format(int(p[j])) +
-                        '{:.3f}'.format(p[j] - int(p[j]))[1:],
-                        text_mayChange=False,
-                        text_pos=(-2.75,0,0),
-                        scale=.035,
-                        pos=(0.15 + j * 0.25, 0, -0.11),
-                        relief=1,
-                        width=5.25,
-                    )
-                    ps[j] = OnscreenText(parent=posi[j],
-                                             text=ps[j],
+                for k in range(3):
+                    if p[k]>100000:
+                        outStar=OnscreenText(
+                            parent=infoCard,
+                            text='\1white\1\1roman\1\t\t\tOh, I\'m sorry, it\'s out.\n\n\
+                            \"Change\" to pull it back\2\2',
+                            scale=0.062,
+                            pos=(0.0,-0.09,0))
+                        break
+                else:
+                    for i in range(3):
+                        velo[i] = DirectEntry(
+                            parent=infoCard,
+                            text='{:' '>19,.3f}'.format(v[i]),
+                            text_mayChange=False,
+                            text_pos=(-2.5,0,0),
+                            scale=.035,
+                            pos=(0.14 + i * 0.26, 0, -0.218),
+                            relief=1,
+                            width=5.85,
+                        )
+                        vl[i] = OnscreenText(parent=velo[i],
+                                             text=vl[i],
                                              scale=1.2,
-                                             pos=(-3.5, 0, 0),
+                                             pos=(-3.3, 0, 0),
                                              fg=(0.5, 1, 0.9, 1))
-                P = OnscreenText(parent=posi[1],
-                                 text='\1roman\1Position\2',
-                                 scale=1.2,
-                                 pos=(0, 1.46, 0),
-                                 align=TextNode.ACenter,
-                                 fg=(0.9, 0.14, 0.85, 1))
-                UnP = OnscreenText(parent=posi[2],
-                                   text='\1roman\1\1blgr\1km\2\2',
-                                   scale=1.2,
-                                   pos=(4, 0, 0))
+                    V = OnscreenText(parent=velo[1],
+                                     text='\1roman\1Velocity\2',
+                                     scale=1.2,
+                                     pos=(0, 1.5, 0),
+                                     align=TextNode.ACenter,
+                                     fg=(0.9, 0.85, 0.14, 1))
+                    UnV = OnscreenText(parent=velo[2],
+                                       text='\1roman\1\1blgr\1km/s\2\2',
+                                       scale=1.2,
+                                       pos=(5, 0, 0))
+                    for j in range(3):
+                        posi[j] = DirectEntry(
+                            parent=infoCard,
+                            text='{:' '>19,.3f}'.format(p[j]),
+                            text_mayChange=False,
+                            text_pos=(-2.5,0,0),
+                            scale=.035,
+                            pos=(0.14 + j * 0.26, 0, -0.11),
+                            relief=1,
+                            width=5.85,
+                        )
+                        ps[j] = OnscreenText(parent=posi[j],
+                                                 text=ps[j],
+                                                 scale=1.2,
+                                                 pos=(-3.3, 0, 0),
+                                                 fg=(0.5, 1, 0.9, 1))
+                    P = OnscreenText(parent=posi[1],
+                                     text='\1roman\1Position\2',
+                                     scale=1.2,
+                                     pos=(0, 1.46, 0),
+                                     align=TextNode.ACenter,
+                                     fg=(0.9, 0.14, 0.85, 1))
+                    UnP = OnscreenText(parent=posi[2],
+                                       text='\1roman\1\1blgr\1km\2\2',
+                                       scale=1.2,
+                                       pos=(4.8, 0, 0))
                 global MenuIns
                 if MenuIns.changeButtonSW is False:
                     myTr = YesNoCancelDialog(parent=infoCard,
@@ -587,7 +605,7 @@ class starCards:
                                                  '\1blgr\1Delete\2'
                                              ],
                                              button_scale=1.1,
-                                             pos=(0.5, 0, -0.186),
+                                             pos=(0.5, 0, -0.188),
                                              buttonValueList=[-1, 0, 1],
                                              command=self.closeDetailCard,
                                              extraArgs=[obj])
@@ -599,7 +617,7 @@ class starCards:
                                     buttonTextList=['\1blgr\1Close\2'],
                                     buttonValueList=[-1],
                                     button_scale=1.1,
-                                    pos=(0.67, 0, -0.186),
+                                    pos=(0.75, 0, -0.188),
                                     command=self.closeDetailCard,
                                     extraArgs=[obj])
             else:
