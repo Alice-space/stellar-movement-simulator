@@ -119,6 +119,7 @@ class Menu:
             self.changeButtonSW = True
             self.Ch_button.destroy()
             self.changeButtonSwitch()
+        reinitialize()
         global StarCards
         StarCards.init()
 
@@ -355,7 +356,6 @@ class Menu:
                     legitimate = False
                     self.errorWarnings[le] = t
             if legitimate:
-                reinitialize()
                 if newStar is False:
                     star.name='\1white\1Me\2'
                     if not dataS[0]:
@@ -370,6 +370,7 @@ class Menu:
                     #Arguments change has no efficacy
                     #Here is something Mem.py need to do
                 else:
+                    reinitialize()
                     if not dataS[0]:
                         dataS[0] = '\1white\1Default Object\2'
                     else:
