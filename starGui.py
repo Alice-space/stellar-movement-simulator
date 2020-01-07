@@ -85,16 +85,16 @@ class Menu:
             self.Ch_button = DirectButton(parent=self.StarMenu,
                                           relief=0,
                                           scale=0.25,
-                                          pos=(-0.3, 0, -0.86),
-                                          text='\1light\1Change\2',
+                                          pos=(-0.27, 0, -0.87),
+                                          text='\1blgr\1Change\2',
                                           text_scale=0.25,
                                           command=self.changeButtonHandler)
         else:
             self.Ch_button = DirectButton(parent=self.StarMenu,
                                           relief=0,
                                           scale=0.2505,
-                                          pos=(-0.3, 0, -0.86),
-                                          text='\1light\1Done\2',
+                                          pos=(-0.27, 0, -0.87),
+                                          text='\1blgr\1Done\2',
                                           text_scale=0.25,
                                           command=self.changeButtonHandler)
 
@@ -119,6 +119,8 @@ class Menu:
             self.changeButtonSW = True
             self.Ch_button.destroy()
             self.changeButtonSwitch()
+        global statusText
+        statusText['text']='\1white\1The world is \2\1red\1not running\2'
         reinitialize()
         global StarCards
         StarCards.init()
@@ -520,55 +522,59 @@ class starCards:
                 for i in range(3):
                     velo[i] = DirectEntry(
                         parent=infoCard,
-                        initialText='{:'
+                        text='{:'
                         '>8}'.format(int(v[i])) +
                         '{:.3f}'.format(v[i] - int(v[i]))[1:],
+                        text_mayChange=False,
+                        text_pos=(-2.75,0,0),
                         scale=.035,
-                        pos=(0.055 + i * 0.234, 0, -0.218),
+                        pos=(0.15 + i * 0.25, 0, -0.218),
                         relief=1,
-                        width=5.2,
+                        width=5.25,
                     )
                     vl[i] = OnscreenText(parent=velo[i],
                                          text=vl[i],
                                          scale=1.2,
-                                         pos=(-0.7, 0, 0),
+                                         pos=(-3.7, 0, 0),
                                          fg=(0.5, 1, 0.9, 1))
                 V = OnscreenText(parent=velo[1],
                                  text='\1roman\1Velocity\2',
                                  scale=1.2,
-                                 pos=(2.5, 1.7, 0),
+                                 pos=(0, 1.5, 0),
                                  align=TextNode.ACenter,
                                  fg=(0.9, 0.85, 0.14, 1))
                 UnV = OnscreenText(parent=velo[2],
                                    text='\1roman\1\1blgr\1km/s\2\2',
                                    scale=1.2,
-                                   pos=(6.7, 0, 0))
+                                   pos=(4.2, 0, 0))
                 for j in range(3):
                     posi[j] = DirectEntry(
                         parent=infoCard,
-                        initialText='{:'
+                        text='{:'
                         '>8}'.format(int(p[j])) +
                         '{:.3f}'.format(p[j] - int(p[j]))[1:],
+                        text_mayChange=False,
+                        text_pos=(-2.75,0,0),
                         scale=.035,
-                        pos=(0.055 + j * 0.234, 0, -0.11),
+                        pos=(0.15 + j * 0.25, 0, -0.11),
                         relief=1,
-                        width=5.2,
+                        width=5.25,
                     )
                     ps[j] = OnscreenText(parent=posi[j],
                                              text=ps[j],
                                              scale=1.2,
-                                             pos=(-0.9, 0, 0),
+                                             pos=(-3.5, 0, 0),
                                              fg=(0.5, 1, 0.9, 1))
                 P = OnscreenText(parent=posi[1],
                                  text='\1roman\1Position\2',
                                  scale=1.2,
-                                 pos=(2.5, 1.7, 0),
+                                 pos=(0, 1.46, 0),
                                  align=TextNode.ACenter,
                                  fg=(0.9, 0.14, 0.85, 1))
                 UnP = OnscreenText(parent=posi[2],
                                    text='\1roman\1\1blgr\1km\2\2',
                                    scale=1.2,
-                                   pos=(6.7, 0, 0))
+                                   pos=(4, 0, 0))
                 global MenuIns
                 if MenuIns.changeButtonSW is False:
                     myTr = YesNoCancelDialog(parent=infoCard,
@@ -690,7 +696,7 @@ class guiRenderReg:
             self.fg('red', 1, 0.2, 0, 2)
             self.fg('white', 1, 1, 1, 1)
             self.setfont('cmtt12', 'roman')
-            self.slant('slant',0.25)
+            self.slant('slant',0.2)
             # TODO no such font
         except:
             pass
@@ -888,7 +894,7 @@ class gui(ShowBase):
         t_k = '\1white\1The world is \2\1red\1not running\2'
         statusText = OnscreenText(
             text=t_k,
-            pos=(0.3, -0.97, 0),
+            pos=(0.35, -0.972, 0),
             scale=0.06,
             mayChange=True,
         )
