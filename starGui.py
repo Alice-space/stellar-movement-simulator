@@ -1,7 +1,7 @@
 '''
 @Author: Alicespace
 @Date: 2019-12-25 10:03:35
-@LastEditTime : 2019-12-30 14:28:10
+@LastEditTime : 2020-01-07 20:00:36
 '''
 from direct.showbase.ShowBase import ShowBase
 from direct.gui.OnscreenText import OnscreenText
@@ -34,7 +34,7 @@ class Menu:
         '''
         self.errorWarnings = {}
         try:
-            size=canvasSize
+            size = canvasSize
         except:
             size = (0, 0.99, -1.08, 1)
         self.StarMenu = DirectScrolledFrame(relief=0,
@@ -46,9 +46,9 @@ class Menu:
         self.StarMenucanvasParent = self.StarMenucanvas.getParent()
         path0 = getPath() + '/res/texture/gui-texture/'
         try:
-            rateValue=self.rateGot
+            rateValue = self.rateGot
         except:
-            rateValue=20
+            rateValue = 20
         self.timeRateBar = DirectScrollBar(
             parent=self.StarMenu,
             value=rateValue,
@@ -415,7 +415,6 @@ class starCards:
         self.objs = getcurrentobjects()
         self.generateCard()
 
-
     def selectRandomTexture(self, objtype):
         '''
         右侧卡片选择随机贴图
@@ -614,8 +613,8 @@ class starCards:
             reinitialize()
             processdelete(obj)
             global canvasSize
-            canvasSize = (0, 0.996,
-                        MenuIns.StarMenu['canvasSize'][2] + 0.690, 1)
+            canvasSize = (0, 0.996, MenuIns.StarMenu['canvasSize'][2] + 0.690,
+                          1)
             MenuIns.StarMenu.destroy()
             MenuIns.init()
             self.init()
@@ -688,7 +687,7 @@ class guiRenderReg:
             self.fg('red', 1, 0.2, 0, 2)
             self.fg('white', 1, 1, 1, 1)
             self.setfont('cmtt12', 'roman')
-            self.slant('slant',0.25)
+            self.slant('slant', 0.25)
             # TODO no such font
         except:
             pass
@@ -704,10 +703,10 @@ class guiRenderReg:
         tpG.setTextColor(r, g, b, a)
         self.tp.setProperties(name, tpG)
 
-    def slant(self,name,slantNum):
+    def slant(self, name, slantNum):
         tpS = TextProperties()
         tpS.setSlant(slantNum)
-        self.tp.setProperties(name,tpS)
+        self.tp.setProperties(name, tpS)
 
 
 def getPath():
@@ -808,22 +807,20 @@ class TipMgr:
         else:
             self.writecsv('NoTip', '1')
         controlTipContext = 'Press \"R\" to run\n\n  Press \"Q\" to hide the Menu\n\n    Press \"ctrl+e\" to exit\n\n And more importantly,\n\n\1red\1Stop running\2 if you want to add some stars!!!'
-        self.controltip = YesNoDialog(
-            text=controlTipContext,
-            scale=1,
-            pos=(-0.02, 0, 0.22),
-            buttonTextList=['No tips', '\tNext'],
-            buttonValueList=[0, 1],
-            midPad=0.1,
-            button_relief=0,
-            relief=1,
-            command=self.endControlTip)
+        self.controltip = YesNoDialog(text=controlTipContext,
+                                      scale=1,
+                                      pos=(-0.02, 0, 0.22),
+                                      buttonTextList=['No tips', '\tNext'],
+                                      buttonValueList=[0, 1],
+                                      midPad=0.1,
+                                      button_relief=0,
+                                      relief=1,
+                                      command=self.endControlTip)
 
     def endControlTip(self, lastchose):
         self.controltip.destroy()
         if lastchose == 0:
             self.writecsv('NoTip', '1')
-        
 
     def VariousTip(self):
         try:
@@ -840,14 +837,14 @@ class TipMgr:
                 scale=1,
                 pos=(-0.02, 0, 0.22),
                 buttonTextList=['No tips', '\tClose'],
-                buttonValueList=[0, 1],
+                buttonValueList=[1, 0],
                 midPad=0.15,
                 button_relief=0,
                 relief=1,
                 command=self.endVariousTip)
 
     def endVariousTip(self, lastchose):
-        if lastchose == 1:
+        if lastchose == 0:
             pass
         else:
             self.writecsv('NoVtip', '1')
