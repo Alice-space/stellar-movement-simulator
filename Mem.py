@@ -288,7 +288,6 @@ le. (A trivial function) '''
         if obj.readstate == True:
             obj.writestate = True
             obj.order = 0
-            obj.switch = None
             obj.temptime = 0
             obj.objdata = deque([[0] + obj.vel + obj.cor])
             temp.append(obj)
