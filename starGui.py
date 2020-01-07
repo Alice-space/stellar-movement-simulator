@@ -290,7 +290,7 @@ class Menu:
             pass
         else:
             dataS = [
-                star.name[7:-1]#去掉文字渲染
+                star.name
                 , star.mass, star.radius, star.cor[0], star.cor[1],
                 star.cor[2], star.vel[0], star.vel[1], star.vel[2]
             ]
@@ -357,7 +357,6 @@ class Menu:
                     self.errorWarnings[le] = t
             if legitimate:
                 if newStar is False:
-                    star.name='\1white\1Me\2'
                     if not dataS[0]:
                         dataS[0] = '\1white\1Default Object\2'
                     else:
@@ -545,18 +544,18 @@ class starCards:
                                    scale=1.2,
                                    pos=(6.7, 0, 0))
                 for j in range(3):
-                    posi[2 - j] = DirectEntry(
+                    posi[j] = DirectEntry(
                         parent=infoCard,
                         initialText='{:'
-                        '>8}'.format(int(p[i])) +
-                        '{:.3f}'.format(p[i] - int(p[i]))[1:],
+                        '>8}'.format(int(p[j])) +
+                        '{:.3f}'.format(p[j] - int(p[j]))[1:],
                         scale=.035,
-                        pos=(0.055 + (2 - j) * 0.234, 0, -0.11),
+                        pos=(0.055 + j * 0.234, 0, -0.11),
                         relief=1,
                         width=5.2,
                     )
-                    ps[2 - j] = OnscreenText(parent=posi[2 - j],
-                                             text=ps[2 - j],
+                    ps[j] = OnscreenText(parent=posi[j],
+                                             text=ps[j],
                                              scale=1.2,
                                              pos=(-0.9, 0, 0),
                                              fg=(0.5, 1, 0.9, 1))
