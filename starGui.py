@@ -789,6 +789,8 @@ class TipMgr:
     def __init__(self):
         self.statusDict = {}
         self.readcsv()
+        global once
+        once = 0
 
     def readcsv(self):
         csvPath = Filename(getPath() + '/res/config/Tips').toOsSpecific()
@@ -846,25 +848,25 @@ class TipMgr:
         
 
     def VariousTip(self):
-        try:
-            if self.Varioustip:
-                return None
-        except:
-            pass
-        if self.statusDict['NoVtip'] == '1':
-            return
+        global once
+        if once:
+            return None
         else:
-            t_k3 = 'You can click \1pink\1\"Various\"\2 to design you own star!!!\n\nAnd notice English input is acceptable'
-            self.Varioustip = YesNoDialog(
-                text=t_k3,
-                scale=1,
-                pos=(-0.02, 0, 0.22),
-                buttonTextList=['No tips', '\tClose'],
-                buttonValueList=[1, 0],
-                midPad=0.15,
-                button_relief=0,
-                relief=1,
-                command=self.endVariousTip)
+            if self.statusDict['NoVtip'] == '1':
+                return
+            else:
+                t_k3 = 'You can click \1pink\1\"Various\"\2 to design you own star!!!\n\nAnd notice English input is acceptable'
+                self.Varioustip = YesNoDialog(
+                    text=t_k3,
+                    scale=1,
+                    pos=(-0.02, 0, 0.22),
+                    buttonTextList=['No tips', '\tClose'],
+                    buttonValueList=[1, 0],
+                    midPad=0.15,
+                    button_relief=0,
+                    relief=1,
+                    command=self.endVariousTip)
+            once+=1
 
     def endVariousTip(self, lastchose):
         if lastchose == 0:
