@@ -102,6 +102,7 @@ class Menu:
         '''
         changeButton的事件响应
         '''
+        #当有超过一个球时change后不能run
         global KeyReg
         if self.changeButtonSW is True:
             global World
@@ -112,16 +113,16 @@ class Menu:
             self.changeButtonSW = False
             self.Ch_button.destroy()
             self.changeButtonSwitch()
-            KeyReg.unregkeys()
+            
         else:
             try:
-                self.detailCardFrame.destory()
+                self.detailedCardHandler(0,0,False)
             except:
                 pass
             self.changeButtonSW = True
             self.Ch_button.destroy()
             self.changeButtonSwitch()
-            KeyReg.regKey()
+            
         global statusText
         statusText['text']='\1white\1The world is \2\1red\1not running\2'
         reinitialize()
@@ -178,7 +179,7 @@ class Menu:
                 parent=self.StarMenucanvas,
                 frameSize=(0, 0.955, -0.26, 0),
                 pos=(0, 0, 1 - 0.27 * i),
-                relief=1,
+                relief=2,
                 frameTexture=path + objTypes[i] + '.jpg',
                 image_scale=0.25,
                 text=typeText[i],
@@ -212,126 +213,121 @@ class Menu:
         '''
         生成左侧细节卡片
         '''
-        global KeyReg
-        KeyReg.unregkeys()
-        global Tipmgr
-        Tipmgr.VariousTip()
-        global WorldSwitch,World,statusText
-        '''try:
-            World.end()
-            statusText['text']='\1white\1The world is \2\1red\1not running\2'
-            WorldSwitch.Switchstatus= 1
-        except:
-            pass'''
-        
-        try:
-            self.detailCardFrame.destroy()
-        except:
-            pass
-        
-        try:
-            if self.Filepath:
-                pass
-        except:
-            self.Filepath = None
-
-        
-        self.detailCardFrame = DirectFrame(parent=self.StarMenu,
-                                           relief=1,
-                                           frameSize=(0, 0.8, -1, 1),
-                                           frameColor=(0.7, 0.7, 0.2, 1),
-                                           pos=(-2.58, 0, 0))
-        path = getPath() + '/res/card/detailCard/' + objtype + '.jpg'
-        self.detailCardFrame['frameTexture'] = path
-        entries_title = [
-            'Name', 'mass\t\t   kg', 'radius\t\t   km', 'x\t\t\tkm',
-            'y\t\t\tkm', 'z\t\t\tkm', 'V_x\t\t\tkm/s', 'V_y\t\t\tkm/s',
-            'V_z\t\t\tkm/s'
-        ]
-        self.entryList, self.textList = [], []
-
-        def Name(num):
-            t = DirectEntry(parent=self.detailCardFrame,
-                            scale=0.063,
-                            width=8,
-                            relief=1,
-                            pos=(0.1, 0, 0.8))
-            self.entryList.append(t)
-            t = OnscreenText(parent=self.entryList[num],
-                             text=entries_title[num],
-                             scale=0.7,
-                             pos=(1.5, 1.5, 0),
-                             fg=(0.5, 1, 0.9, 1))
-            self.textList.append(t)
-
-        def MassandRadius(num):
-            t = DirectEntry(parent=self.detailCardFrame,
-                            scale=0.06,
-                            width=5,
-                            relief=1,
-                            pos=(0.17, 0, 0.7 - 0.17 * num))
-            self.entryList.append(t)
-            t = OnscreenText(parent=self.entryList[num],
-                             text=entries_title[num],
-                             scale=0.7,
-                             pos=(2, 0, 0),
-                             fg=(0.5, 1, 0.9, 1))
-            self.textList.append(t)
-
-        def CorandVel(num):
-            t = DirectEntry(parent=self.detailCardFrame,
-                            scale=0.06,
-                            width=7,
-                            relief=1,
-                            pos=(0.17, 0, 0.7 - 0.17 * num))
-            self.entryList.append(t)
-            t = OnscreenText(parent=self.entryList[num],
-                             text=entries_title[num],
-                             scale=0.7,
-                             pos=(3.6, 0, 0),
-                             fg=(0.5, 1, 0.9, 1))
-            self.textList.append(t)
-
-        for num in range(9):
-            if num == 0:
-                Name(num)
-            else:
-                if num < 3:
-                    MassandRadius(num)
-                else:
-                    CorandVel(num)
-        if newStar:
+        if statusText['text']=='\1white\1The world is \2\1red\1running\2':
             pass
         else:
-            dataS = [
-                star.name
-                , star.mass, star.radius, star.cor[0], star.cor[1],
-                star.cor[2], star.vel[0], star.vel[1], star.vel[2]
-            ]
-            for num in range(9):
-                self.entryList[num].enterText(str(dataS[num]))
+            global KeyReg
+            KeyReg.unregkeys()
+            global Tipmgr
+            Tipmgr.VariousTip()
+            try:
+                self.detailCardFrame.destroy()
+            except:
+                pass
+            
+            try:
+                if self.Filepath:
+                    pass
+            except:
+                self.Filepath = None
 
-        self.closeEntry = YesNoDialog(
-            parent=self.detailCardFrame,
-            buttonValueList=[0, 1],
-            buttonTextList=['\1blgr\1Close\2', '\1blgr\1Done\2'],
-            button_relief=2,
-            scale=0.8,
-            pos=(0.56, 0, -0.75),
-            relief=0,
-            command=self.detailedCardHandler,
-            extraArgs=[objtype, newStar, star])
-        self.textureSet = OkDialog(parent=self.detailCardFrame,
-                                   buttonTextList=['\1pink\1Various\2'],
-                                   button_relief=2,
-                                   scale=0.8,
-                                   pos=(0.56, 0, -0.64),
-                                   relief=0,
-                                   command=self.detailedCardVariousTexture)
-        self.textureSet['button_frameTexture'] = self.detailCardFrame[
-            'frameTexture']
-        self.closeEntry['button_frameTexture'] = self.detailCardFrame[
-            'frameTexture']
+            
+            self.detailCardFrame = DirectFrame(parent=self.StarMenu,
+                                               relief=1,
+                                               frameSize=(0, 0.8, -1, 1),
+                                               frameColor=(0.7, 0.7, 0.2, 1),
+                                               pos=(-2.58, 0, 0))
+            path = getPath() + '/res/card/detailCard/' + objtype + '.jpg'
+            self.detailCardFrame['frameTexture'] = path
+            entries_title = [
+                'Name', 'mass\t\t   kg', 'radius\t\t   km', 'x\t\t\tkm',
+                'y\t\t\tkm', 'z\t\t\tkm', 'V_x\t\t\tkm/s', 'V_y\t\t\tkm/s',
+                'V_z\t\t\tkm/s'
+            ]
+            self.entryList, self.textList = [], []
+
+            def Name(num):
+                t = DirectEntry(parent=self.detailCardFrame,
+                                scale=0.063,
+                                width=8,
+                                relief=1,
+                                pos=(0.1, 0, 0.8))
+                self.entryList.append(t)
+                t = OnscreenText(parent=self.entryList[num],
+                                 text=entries_title[num],
+                                 scale=0.7,
+                                 pos=(1.5, 1.5, 0),
+                                 fg=(0.5, 1, 0.9, 1))
+                self.textList.append(t)
+
+            def MassandRadius(num):
+                t = DirectEntry(parent=self.detailCardFrame,
+                                scale=0.06,
+                                width=5,
+                                relief=1,
+                                pos=(0.17, 0, 0.7 - 0.17 * num))
+                self.entryList.append(t)
+                t = OnscreenText(parent=self.entryList[num],
+                                 text=entries_title[num],
+                                 scale=0.7,
+                                 pos=(2, 0, 0),
+                                 fg=(0.5, 1, 0.9, 1))
+                self.textList.append(t)
+
+            def CorandVel(num):
+                t = DirectEntry(parent=self.detailCardFrame,
+                                scale=0.06,
+                                width=7,
+                                relief=1,
+                                pos=(0.17, 0, 0.7 - 0.17 * num))
+                self.entryList.append(t)
+                t = OnscreenText(parent=self.entryList[num],
+                                 text=entries_title[num],
+                                 scale=0.7,
+                                 pos=(3.6, 0, 0),
+                                 fg=(0.5, 1, 0.9, 1))
+                self.textList.append(t)
+
+            for num in range(9):
+                if num == 0:
+                    Name(num)
+                else:
+                    if num < 3:
+                        MassandRadius(num)
+                    else:
+                        CorandVel(num)
+            if newStar:
+                pass
+            else:
+                dataS = [
+                    star.name
+                    , star.mass, star.radius, star.cor[0], star.cor[1],
+                    star.cor[2], star.vel[0], star.vel[1], star.vel[2]
+                ]
+                for num in range(9):
+                    self.entryList[num].enterText(str(dataS[num]))
+
+            self.closeEntry = YesNoDialog(
+                parent=self.detailCardFrame,
+                buttonValueList=[0, 1],
+                buttonTextList=['\1blgr\1Close\2', '\1blgr\1Done\2'],
+                button_relief=2,
+                scale=0.8,
+                pos=(0.56, 0, -0.75),
+                relief=0,
+                command=self.detailedCardHandler,
+                extraArgs=[objtype, newStar, star])
+            self.textureSet = OkDialog(parent=self.detailCardFrame,
+                                       buttonTextList=['\1pink\1Various\2'],
+                                       button_relief=2,
+                                       scale=0.8,
+                                       pos=(0.56, 0, -0.64),
+                                       relief=0,
+                                       command=self.detailedCardVariousTexture)
+            self.textureSet['button_frameTexture'] = self.detailCardFrame[
+                'frameTexture']
+            self.closeEntry['button_frameTexture'] = self.detailCardFrame[
+                'frameTexture']
 
     def detailedCardVariousTexture(self, choice):
         '''
@@ -380,8 +376,6 @@ class Menu:
                     star.vel[0], star.vel[1], star.vel[2],\
                     star.texture = dataS + [self.Filepath]
                     star.objdata = deque([[0] + dataS[6: 9] +dataS[3: 6]])
-                    #Arguments change has no efficacy
-                    #Here is something Mem.py need to do
                 else:
                     reinitialize()
                     if not dataS[0]:
